@@ -31,10 +31,10 @@ const Login = () => {
 
   // Only show demo logins for web-allowed roles (GRA, Inspector, Admin)
   const demoLogins = [
-    { label: 'GRA Officer', email: 'gra@demo.gh', password: 'demo123' },
-    { label: 'Inspector', email: 'inspector@demo.gh', password: 'demo123' },
-    { label: 'Supervisor', email: 'supervisor@demo.gh', password: 'demo123' },
-    { label: 'Admin', email: 'admin@demo.gh', password: 'admin123' }
+    { label: 'GRA Officer', email: 'gra@demo.com', password: 'demo123' },
+    { label: 'Inspector', email: 'inspector@demo.com', password: 'demo123' },
+    { label: 'Supervisor', email: 'supervisor@demo.com', password: 'demo123' },
+    { label: 'Admin', email: 'admin@demo.com', password: 'admin123' }
   ];
 
   const handleDemoLogin = (demo) => {
