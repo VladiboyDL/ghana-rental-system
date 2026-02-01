@@ -40,15 +40,16 @@ async function seed() {
     const tenant2 = users.find(u => u.email === 'tenant2@demo.com');
     const inspector = users.find(u => u.email === 'inspector@demo.com');
 
-    // Demo Properties
+    // Demo Properties - Using correct property type codes from constants.js
+    // R-3B = 3-Bedroom, R-4B+ = 4+ Bedroom, R-2B = 2-Bedroom, C-OFF = Office, R-VL = Villa
     const propertiesResult = await client.query(`
       INSERT INTO properties (landlord_id, property_code, digital_address, region, district, city, neighborhood, property_type, property_category, bedrooms, bathrooms, floor_area_sqm, year_built, is_furnished, has_parking, has_security, has_generator, ownership_type, ownership_verified, status, is_available)
       VALUES
-        ($1, 'PROP-ACC-001', 'GA-123-4567', 'Greater Accra', 'Accra Metropolitan', 'Accra', 'East Legon', 'APARTMENT', 'RESIDENTIAL', 3, 2, 120, 2020, true, true, true, false, 'FREEHOLD', true, 'VERIFIED', false),
-        ($1, 'PROP-ACC-002', 'GA-234-5678', 'Greater Accra', 'Tema Metropolitan', 'Tema', 'Community 25', 'HOUSE', 'RESIDENTIAL', 4, 3, 200, 2018, false, true, true, true, 'FREEHOLD', true, 'VERIFIED', true),
-        ($2, 'PROP-KUM-001', 'AS-345-6789', 'Ashanti', 'Kumasi Metropolitan', 'Kumasi', 'Ahodwo', 'APARTMENT', 'RESIDENTIAL', 2, 2, 85, 2021, true, true, false, false, 'LEASEHOLD', true, 'VERIFIED', false),
-        ($2, 'PROP-KUM-002', 'AS-456-7890', 'Ashanti', 'Kumasi Metropolitan', 'Kumasi', 'Nhyiaeso', 'OFFICE', 'COMMERCIAL', 0, 2, 150, 2019, false, true, true, true, 'FREEHOLD', false, 'PENDING_VERIFICATION', true),
-        ($1, 'PROP-ACC-003', 'GA-567-8901', 'Greater Accra', 'Accra Metropolitan', 'Accra', 'Cantonments', 'TOWNHOUSE', 'RESIDENTIAL', 5, 4, 300, 2022, true, true, true, true, 'FREEHOLD', true, 'VERIFIED', true)
+        ($1, 'PROP-ACC-001', 'GA-123-4567', 'Greater Accra', 'Accra Metropolitan', 'Accra', 'East Legon', 'R-3B', 'RESIDENTIAL', 3, 2, 120, 2020, true, true, true, false, 'FREEHOLD', true, 'VERIFIED', false),
+        ($1, 'PROP-ACC-002', 'GA-234-5678', 'Greater Accra', 'Tema Metropolitan', 'Tema', 'Community 25', 'R-4B+', 'RESIDENTIAL', 4, 3, 200, 2018, false, true, true, true, 'FREEHOLD', true, 'VERIFIED', true),
+        ($2, 'PROP-KUM-001', 'AS-345-6789', 'Ashanti', 'Kumasi Metropolitan', 'Kumasi', 'Ahodwo', 'R-2B', 'RESIDENTIAL', 2, 2, 85, 2021, true, true, false, false, 'LEASEHOLD', true, 'VERIFIED', false),
+        ($2, 'PROP-KUM-002', 'AS-456-7890', 'Ashanti', 'Kumasi Metropolitan', 'Kumasi', 'Nhyiaeso', 'C-OFF', 'COMMERCIAL', 0, 2, 150, 2019, false, true, true, true, 'FREEHOLD', false, 'PENDING_VERIFICATION', true),
+        ($1, 'PROP-ACC-003', 'GA-567-8901', 'Greater Accra', 'Accra Metropolitan', 'Accra', 'Cantonments', 'R-VL', 'RESIDENTIAL', 5, 4, 300, 2022, true, true, true, true, 'FREEHOLD', true, 'VERIFIED', true)
       RETURNING id, property_code
     `, [landlord1.id, landlord2.id]);
 
@@ -61,7 +62,7 @@ async function seed() {
       VALUES
         ('CTR-2024-0001', $1, $2, $3, 'RESIDENTIAL', '2024-01-01', '2025-12-31', 3500, 7000, 200, 2, 'MONTHLY', 0.08, 3360, 'ACTIVE', true, '2023-12-20', true, '2023-12-21', NULL, NULL),
         ('CTR-2024-0002', $4, $5, $6, 'RESIDENTIAL', '2024-03-01', '2026-02-28', 2500, 5000, 150, 2, 'MONTHLY', 0.08, 2000, 'ACTIVE', true, '2024-02-15', true, '2024-02-16', NULL, NULL),
-        ('CTR-2024-0003', $7, $2, $6, 'RESIDENTIAL', '2024-06-01', '2025-05-31', 4500, 9000, 300, 2, 'MONTHLY', 0.08, 0, 'PENDING_TENANT_CONFIRMATION', true, '2024-05-20', false, NULL, '123456', '2025-12-31')
+        ('CTR-2024-0003', $7, $2, $6, 'RESIDENTIAL', '2024-06-01', '2025-05-31', 4500, 9000, 300, 2, 'MONTHLY', 0.08, 0, 'PENDING_TENANT_CONFIRMATION', true, '2024-05-20', false, NULL, '123456', '2027-12-31')
       RETURNING id, contract_number
     `, [properties[0].id, landlord1.id, tenant1.id, properties[2].id, landlord2.id, tenant2.id, properties[1].id]);
 
@@ -83,17 +84,18 @@ async function seed() {
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth() + 1;
 
+    // Market rent data using correct property type codes
     await client.query(`
       INSERT INTO market_rent_data (region, district, neighborhood, property_type, bedrooms, period_year, period_month, sample_size, average_rent, median_rent, min_rent, max_rent, percentile_10, percentile_90)
       VALUES
-        ('Greater Accra', 'Accra Metropolitan', 'East Legon', 'APARTMENT', 3, $1, $2, 45, 4200, 4000, 2500, 7000, 2800, 6000),
-        ('Greater Accra', 'Accra Metropolitan', 'Cantonments', 'APARTMENT', 3, $1, $2, 32, 5500, 5200, 3500, 9000, 4000, 7500),
-        ('Greater Accra', 'Tema Metropolitan', 'Community 25', 'HOUSE', 4, $1, $2, 28, 3800, 3600, 2200, 6000, 2500, 5200),
-        ('Ashanti', 'Kumasi Metropolitan', 'Ahodwo', 'APARTMENT', 2, $1, $2, 38, 2200, 2000, 1200, 3500, 1400, 3000),
-        ('Ashanti', 'Kumasi Metropolitan', 'Nhyiaeso', 'APARTMENT', 3, $1, $2, 25, 2800, 2600, 1800, 4500, 2000, 3800),
-        ('Greater Accra', 'Accra Metropolitan', 'Airport Residential', 'TOWNHOUSE', 5, $1, $2, 18, 8500, 8000, 5500, 15000, 6000, 12000),
-        ('Greater Accra', 'Accra Metropolitan', 'Osu', 'STUDIO', 0, $1, $2, 42, 1800, 1700, 1000, 3000, 1200, 2500),
-        ('Western', 'Sekondi-Takoradi Metropolitan', 'Beach Road', 'APARTMENT', 2, $1, $2, 22, 1600, 1500, 900, 2800, 1000, 2200)
+        ('Greater Accra', 'Accra Metropolitan', 'East Legon', 'R-3B', 3, $1, $2, 45, 4200, 4000, 2500, 7000, 2800, 6000),
+        ('Greater Accra', 'Accra Metropolitan', 'Cantonments', 'R-3B', 3, $1, $2, 32, 5500, 5200, 3500, 9000, 4000, 7500),
+        ('Greater Accra', 'Tema Metropolitan', 'Community 25', 'R-4B+', 4, $1, $2, 28, 3800, 3600, 2200, 6000, 2500, 5200),
+        ('Ashanti', 'Kumasi Metropolitan', 'Ahodwo', 'R-2B', 2, $1, $2, 38, 2200, 2000, 1200, 3500, 1400, 3000),
+        ('Ashanti', 'Kumasi Metropolitan', 'Nhyiaeso', 'R-3B', 3, $1, $2, 25, 2800, 2600, 1800, 4500, 2000, 3800),
+        ('Greater Accra', 'Accra Metropolitan', 'Airport Residential', 'R-VL', 5, $1, $2, 18, 8500, 8000, 5500, 15000, 6000, 12000),
+        ('Greater Accra', 'Accra Metropolitan', 'Osu', 'R-SR', 0, $1, $2, 42, 1800, 1700, 1000, 3000, 1200, 2500),
+        ('Western', 'Sekondi-Takoradi Metropolitan', 'Beach Road', 'R-2B', 2, $1, $2, 22, 1600, 1500, 900, 2800, 1000, 2200)
     `, [currentYear, currentMonth]);
 
     console.log('Market data seeded');
