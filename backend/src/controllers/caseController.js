@@ -1,10 +1,10 @@
-const db = require('../config/database');
+const { db } = require('../config/database');
 const { generateId, generateCaseNumber } = require('../utils/helpers');
 const { sendSMS } = require('../simulators/sms');
 const { CASE_TYPES, CASE_STATUS, CASE_PRIORITY } = require('../config/constants');
 
 // Get cases (filtered by role)
-const getCases = (req, res) => {
+const getCases = async (req, res) => {
   try {
     const user = req.user;
     const { status, priority, caseType, page = 1, limit = 20 } = req.query;
@@ -19,43 +19,45 @@ const getCases = (req, res) => {
       WHERE 1=1
     `;
     const params = [];
+    let paramIndex = 1;
 
     // Filter by role
     if (user.role === 'INSPECTOR') {
-      query += ' AND ic.assigned_inspector_id = ?';
+      query += ` AND ic.assigned_inspector_id = $${paramIndex++}`;
       params.push(user.id);
     } else if (user.role === 'DISTRICT_OFFICER') {
-      query += ' AND p.district = ?';
+      query += ` AND p.district = $${paramIndex++}`;
       params.push(user.district);
     }
 
     if (status) {
-      query += ' AND ic.status = ?';
+      query += ` AND ic.status = $${paramIndex++}`;
       params.push(status);
     }
     if (priority) {
-      query += ' AND ic.priority = ?';
+      query += ` AND ic.priority = $${paramIndex++}`;
       params.push(priority);
     }
     if (caseType) {
-      query += ' AND ic.case_type = ?';
+      query += ` AND ic.case_type = $${paramIndex++}`;
       params.push(caseType);
     }
 
     // Count total
     const countQuery = query.replace(/SELECT ic\.\*.*FROM/, 'SELECT COUNT(*) as total FROM');
-    const { total } = db.prepare(countQuery).get(...params);
+    const countResult = await db.query(countQuery, params);
+    const total = parseInt(countResult.rows[0].total);
 
     // Add pagination
     const offset = (parseInt(page) - 1) * parseInt(limit);
-    query += ' ORDER BY ic.created_at DESC LIMIT ? OFFSET ?';
+    query += ` ORDER BY ic.created_at DESC LIMIT $${paramIndex++} OFFSET $${paramIndex}`;
     params.push(parseInt(limit), offset);
 
-    const cases = db.prepare(query).all(...params);
+    const result = await db.query(query, params);
 
     res.json({
       success: true,
-      data: cases.map(c => ({
+      data: result.rows.map(c => ({
         id: c.id,
         caseNumber: c.case_number,
         caseType: c.case_type,
@@ -98,11 +100,11 @@ const getCases = (req, res) => {
 };
 
 // Get case by ID
-const getCaseById = (req, res) => {
+const getCaseById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const caseData = db.prepare(`
+    const result = await db.query(`
       SELECT ic.*,
              p.*, p.id as prop_id,
              l.first_name as landlord_first_name, l.last_name as landlord_last_name,
@@ -114,10 +116,10 @@ const getCaseById = (req, res) => {
       JOIN properties p ON ic.property_id = p.id
       JOIN users l ON p.landlord_id = l.id
       LEFT JOIN users u ON ic.assigned_inspector_id = u.id
-      WHERE ic.id = ?
-    `).get(id);
+      WHERE ic.id = $1
+    `, [id]);
 
-    if (!caseData) {
+    if (result.rows.length === 0) {
       return res.status(404).json({
         success: false,
         error: {
@@ -127,13 +129,15 @@ const getCaseById = (req, res) => {
       });
     }
 
+    const caseData = result.rows[0];
+
     // Get related contracts
-    const contracts = db.prepare(`
+    const contractsResult = await db.query(`
       SELECT c.contract_number, c.monthly_rent, c.status, c.start_date, c.end_date
       FROM contracts c
-      WHERE c.property_id = ?
+      WHERE c.property_id = $1
       ORDER BY c.created_at DESC
-    `).all(caseData.property_id);
+    `, [caseData.property_id]);
 
     res.json({
       success: true,
@@ -146,12 +150,12 @@ const getCaseById = (req, res) => {
         source: caseData.source,
         sourceReference: caseData.source_reference,
         description: caseData.description,
-        allegations: JSON.parse(caseData.allegations || '[]'),
+        allegations: typeof caseData.allegations === 'string' ? JSON.parse(caseData.allegations || '[]') : (caseData.allegations || []),
         status: caseData.status,
         scheduledDate: caseData.scheduled_date,
         inspectionDate: caseData.inspection_date,
         inspectionNotes: caseData.inspection_notes,
-        evidence: JSON.parse(caseData.evidence || '[]'),
+        evidence: typeof caseData.evidence === 'string' ? JSON.parse(caseData.evidence || '[]') : (caseData.evidence || []),
         outcome: caseData.outcome,
         outcomeNotes: caseData.outcome_notes,
         penaltyAmount: caseData.penalty_amount,
@@ -176,7 +180,7 @@ const getCaseById = (req, res) => {
           name: `${caseData.inspector_first_name} ${caseData.inspector_last_name}`,
           phone: caseData.inspector_phone
         } : null,
-        contracts,
+        contracts: contractsResult.rows,
         createdAt: caseData.created_at,
         assignedAt: caseData.assigned_at,
         completedAt: caseData.completed_at,
@@ -221,8 +225,8 @@ const createCase = async (req, res) => {
     }
 
     // Check property exists
-    const property = db.prepare('SELECT * FROM properties WHERE id = ?').get(propertyId);
-    if (!property) {
+    const propertyResult = await db.query('SELECT * FROM properties WHERE id = $1', [propertyId]);
+    if (propertyResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
         error: {
@@ -235,11 +239,11 @@ const createCase = async (req, res) => {
     const caseId = generateId();
     const caseNumber = generateCaseNumber();
 
-    db.prepare(`
+    await db.query(`
       INSERT INTO inspection_cases (
         id, case_number, property_id, case_type, priority, source, description, allegations, reported_by
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    `, [
       caseId,
       caseNumber,
       propertyId,
@@ -249,7 +253,7 @@ const createCase = async (req, res) => {
       description || null,
       JSON.stringify(allegations || []),
       req.user?.id || null
-    );
+    ]);
 
     res.status(201).json({
       success: true,
@@ -277,8 +281,8 @@ const assignInspector = async (req, res) => {
     const { id } = req.params;
     const { inspectorId } = req.body;
 
-    const caseData = db.prepare('SELECT * FROM inspection_cases WHERE id = ?').get(id);
-    if (!caseData) {
+    const caseResult = await db.query('SELECT * FROM inspection_cases WHERE id = $1', [id]);
+    if (caseResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
         error: {
@@ -288,8 +292,10 @@ const assignInspector = async (req, res) => {
       });
     }
 
-    const inspector = db.prepare("SELECT * FROM users WHERE id = ? AND role = 'INSPECTOR'").get(inspectorId);
-    if (!inspector) {
+    const caseData = caseResult.rows[0];
+
+    const inspectorResult = await db.query("SELECT * FROM users WHERE id = $1 AND role = 'INSPECTOR'", [inspectorId]);
+    if (inspectorResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
         error: {
@@ -299,11 +305,13 @@ const assignInspector = async (req, res) => {
       });
     }
 
-    db.prepare(`
+    const inspector = inspectorResult.rows[0];
+
+    await db.query(`
       UPDATE inspection_cases
-      SET assigned_inspector_id = ?, status = 'ASSIGNED', assigned_at = datetime('now')
-      WHERE id = ?
-    `).run(inspectorId, id);
+      SET assigned_inspector_id = $1, status = 'ASSIGNED', assigned_at = NOW()
+      WHERE id = $2
+    `, [inspectorId, id]);
 
     // Notify inspector
     await sendSMS(
@@ -331,7 +339,7 @@ const assignInspector = async (req, res) => {
 };
 
 // Schedule inspection
-const scheduleInspection = (req, res) => {
+const scheduleInspection = async (req, res) => {
   try {
     const { id } = req.params;
     const { scheduledDate } = req.body;
@@ -346,8 +354,8 @@ const scheduleInspection = (req, res) => {
       });
     }
 
-    const caseData = db.prepare('SELECT * FROM inspection_cases WHERE id = ?').get(id);
-    if (!caseData) {
+    const caseResult = await db.query('SELECT * FROM inspection_cases WHERE id = $1', [id]);
+    if (caseResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
         error: {
@@ -357,11 +365,11 @@ const scheduleInspection = (req, res) => {
       });
     }
 
-    db.prepare(`
+    await db.query(`
       UPDATE inspection_cases
-      SET scheduled_date = ?, status = 'IN_PROGRESS'
-      WHERE id = ?
-    `).run(scheduledDate, id);
+      SET scheduled_date = $1, status = 'IN_PROGRESS'
+      WHERE id = $2
+    `, [scheduledDate, id]);
 
     res.json({
       success: true,
@@ -382,13 +390,13 @@ const scheduleInspection = (req, res) => {
 };
 
 // Upload evidence
-const uploadEvidence = (req, res) => {
+const uploadEvidence = async (req, res) => {
   try {
     const { id } = req.params;
     const { evidenceItems } = req.body; // Array of evidence objects
 
-    const caseData = db.prepare('SELECT * FROM inspection_cases WHERE id = ?').get(id);
-    if (!caseData) {
+    const caseResult = await db.query('SELECT * FROM inspection_cases WHERE id = $1', [id]);
+    if (caseResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
         error: {
@@ -398,15 +406,15 @@ const uploadEvidence = (req, res) => {
       });
     }
 
-    const existingEvidence = JSON.parse(caseData.evidence || '[]');
+    const caseData = caseResult.rows[0];
+    const existingEvidence = typeof caseData.evidence === 'string' ? JSON.parse(caseData.evidence || '[]') : (caseData.evidence || []);
     const updatedEvidence = [...existingEvidence, ...evidenceItems.map(e => ({
       ...e,
       uploadedAt: new Date().toISOString(),
       uploadedBy: req.user.id
     }))];
 
-    db.prepare('UPDATE inspection_cases SET evidence = ? WHERE id = ?')
-      .run(JSON.stringify(updatedEvidence), id);
+    await db.query('UPDATE inspection_cases SET evidence = $1 WHERE id = $2', [JSON.stringify(updatedEvidence), id]);
 
     res.json({
       success: true,
@@ -427,13 +435,13 @@ const uploadEvidence = (req, res) => {
 };
 
 // Submit inspection report
-const submitReport = (req, res) => {
+const submitReport = async (req, res) => {
   try {
     const { id } = req.params;
     const { inspectionNotes, outcome, outcomeNotes, penaltyAmount } = req.body;
 
-    const caseData = db.prepare('SELECT * FROM inspection_cases WHERE id = ?').get(id);
-    if (!caseData) {
+    const caseResult = await db.query('SELECT * FROM inspection_cases WHERE id = $1', [id]);
+    if (caseResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
         error: {
@@ -442,6 +450,8 @@ const submitReport = (req, res) => {
         }
       });
     }
+
+    const caseData = caseResult.rows[0];
 
     if (caseData.assigned_inspector_id !== req.user.id) {
       return res.status(403).json({
@@ -453,17 +463,17 @@ const submitReport = (req, res) => {
       });
     }
 
-    db.prepare(`
+    await db.query(`
       UPDATE inspection_cases
-      SET inspection_date = date('now'),
-          inspection_notes = ?,
-          outcome = ?,
-          outcome_notes = ?,
-          penalty_amount = ?,
+      SET inspection_date = CURRENT_DATE,
+          inspection_notes = $1,
+          outcome = $2,
+          outcome_notes = $3,
+          penalty_amount = $4,
           status = 'PENDING_REVIEW',
-          completed_at = datetime('now')
-      WHERE id = ?
-    `).run(inspectionNotes, outcome, outcomeNotes, penaltyAmount || null, id);
+          completed_at = NOW()
+      WHERE id = $5
+    `, [inspectionNotes, outcome, outcomeNotes, penaltyAmount || null, id]);
 
     res.json({
       success: true,
@@ -489,8 +499,8 @@ const closeCase = async (req, res) => {
     const { id } = req.params;
     const { finalOutcome, notes } = req.body;
 
-    const caseData = db.prepare('SELECT * FROM inspection_cases WHERE id = ?').get(id);
-    if (!caseData) {
+    const caseResult = await db.query('SELECT * FROM inspection_cases WHERE id = $1', [id]);
+    if (caseResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
         error: {
@@ -500,24 +510,26 @@ const closeCase = async (req, res) => {
       });
     }
 
-    db.prepare(`
+    const caseData = caseResult.rows[0];
+
+    await db.query(`
       UPDATE inspection_cases
       SET status = 'CLOSED',
-          outcome = COALESCE(?, outcome),
-          outcome_notes = COALESCE(?, outcome_notes),
-          closed_at = datetime('now')
-      WHERE id = ?
-    `).run(finalOutcome, notes, id);
+          outcome = COALESCE($1, outcome),
+          outcome_notes = COALESCE($2, outcome_notes),
+          closed_at = NOW()
+      WHERE id = $3
+    `, [finalOutcome, notes, id]);
 
     // Update landlord compliance score if violation confirmed
     if (finalOutcome === 'VIOLATION_CONFIRMED') {
-      const property = db.prepare('SELECT landlord_id FROM properties WHERE id = ?').get(caseData.property_id);
-      if (property) {
-        db.prepare(`
+      const propertyResult = await db.query('SELECT landlord_id FROM properties WHERE id = $1', [caseData.property_id]);
+      if (propertyResult.rows.length > 0) {
+        await db.query(`
           UPDATE users
-          SET compliance_score = MAX(0, compliance_score - 10)
-          WHERE id = ?
-        `).run(property.landlord_id);
+          SET compliance_score = GREATEST(0, COALESCE(compliance_score, 100) - 10)
+          WHERE id = $1
+        `, [propertyResult.rows[0].landlord_id]);
       }
     }
 
@@ -556,12 +568,12 @@ const submitAnonymousTip = async (req, res) => {
     }
 
     // Try to find property
-    const property = db.prepare(`
+    const propertyResult = await db.query(`
       SELECT * FROM properties
-      WHERE digital_address = ? OR street_address LIKE ?
-    `).get(propertyAddress, `%${propertyAddress}%`);
+      WHERE digital_address = $1 OR street_address ILIKE $2
+    `, [propertyAddress, `%${propertyAddress}%`]);
 
-    if (!property) {
+    if (propertyResult.rows.length === 0) {
       // Create a note but no case
       return res.json({
         success: true,
@@ -572,21 +584,23 @@ const submitAnonymousTip = async (req, res) => {
       });
     }
 
+    const property = propertyResult.rows[0];
+
     // Create case
     const caseId = generateId();
     const caseNumber = generateCaseNumber();
 
-    db.prepare(`
+    await db.query(`
       INSERT INTO inspection_cases (
         id, case_number, property_id, case_type, priority, source, description, allegations, risk_score
-      ) VALUES (?, ?, ?, 'ANONYMOUS_TIP', 'MEDIUM', 'ANONYMOUS_REPORT', ?, ?, 45)
-    `).run(
+      ) VALUES ($1, $2, $3, 'ANONYMOUS_TIP', 'MEDIUM', 'ANONYMOUS_REPORT', $4, $5, 45)
+    `, [
       caseId,
       caseNumber,
       property.id,
       description,
       JSON.stringify(allegations || [])
-    );
+    ]);
 
     res.json({
       success: true,

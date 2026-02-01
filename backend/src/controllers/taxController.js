@@ -1,44 +1,46 @@
-const db = require('../config/database');
+const { db } = require('../config/database');
 const { generateId, generateCertificateNumber, generateVerificationCode } = require('../utils/helpers');
 
 // Get tax certificates
-const getCertificates = (req, res) => {
+const getCertificates = async (req, res) => {
   try {
     const user = req.user;
     const { year, periodType, page = 1, limit = 20 } = req.query;
 
     let query = 'SELECT * FROM tax_certificates WHERE 1=1';
     const params = [];
+    let paramIndex = 1;
 
     // Filter by role
     if (user.role.includes('LANDLORD')) {
-      query += ' AND landlord_id = ?';
+      query += ` AND landlord_id = $${paramIndex++}`;
       params.push(user.id);
     }
 
     if (year) {
-      query += ' AND period_year = ?';
+      query += ` AND period_year = $${paramIndex++}`;
       params.push(parseInt(year));
     }
     if (periodType) {
-      query += ' AND period_type = ?';
+      query += ` AND period_type = $${paramIndex++}`;
       params.push(periodType);
     }
 
     // Count total
     const countQuery = query.replace('SELECT *', 'SELECT COUNT(*) as total');
-    const { total } = db.prepare(countQuery).get(...params);
+    const countResult = await db.query(countQuery, params);
+    const total = parseInt(countResult.rows[0].total);
 
     // Add pagination
     const offset = (parseInt(page) - 1) * parseInt(limit);
-    query += ' ORDER BY period_year DESC, period_month DESC LIMIT ? OFFSET ?';
+    query += ` ORDER BY period_year DESC, period_month DESC LIMIT $${paramIndex++} OFFSET $${paramIndex}`;
     params.push(parseInt(limit), offset);
 
-    const certificates = db.prepare(query).all(...params);
+    const result = await db.query(query, params);
 
     res.json({
       success: true,
-      data: certificates.map(c => ({
+      data: result.rows.map(c => ({
         id: c.id,
         certificateNumber: c.certificate_number,
         periodType: c.period_type,
@@ -69,19 +71,19 @@ const getCertificates = (req, res) => {
 };
 
 // Get certificate by ID
-const getCertificateById = (req, res) => {
+const getCertificateById = async (req, res) => {
   try {
     const { id } = req.params;
     const user = req.user;
 
-    const certificate = db.prepare(`
+    const result = await db.query(`
       SELECT tc.*, u.first_name, u.last_name, u.company_name, u.is_corporate, u.tin_number
       FROM tax_certificates tc
       JOIN users u ON tc.landlord_id = u.id
-      WHERE tc.id = ?
-    `).get(id);
+      WHERE tc.id = $1
+    `, [id]);
 
-    if (!certificate) {
+    if (result.rows.length === 0) {
       return res.status(404).json({
         success: false,
         error: {
@@ -90,6 +92,8 @@ const getCertificateById = (req, res) => {
         }
       });
     }
+
+    const certificate = result.rows[0];
 
     // Check authorization
     if (certificate.landlord_id !== user.id && !['GRA_OFFICER', 'SYSTEM_ADMIN'].includes(user.role)) {
@@ -135,7 +139,7 @@ const getCertificateById = (req, res) => {
 };
 
 // Generate tax certificate
-const generateCertificate = (req, res) => {
+const generateCertificate = async (req, res) => {
   try {
     const { landlordId, periodType, periodYear, periodMonth } = req.body;
 
@@ -161,15 +165,15 @@ const generateCertificate = (req, res) => {
     }
 
     // Check if certificate already exists
-    let existingQuery = 'SELECT * FROM tax_certificates WHERE landlord_id = ? AND period_type = ? AND period_year = ?';
+    let existingQuery = 'SELECT * FROM tax_certificates WHERE landlord_id = $1 AND period_type = $2 AND period_year = $3';
     const existingParams = [landlordId, periodType, periodYear];
     if (periodType === 'MONTHLY') {
-      existingQuery += ' AND period_month = ?';
+      existingQuery += ' AND period_month = $4';
       existingParams.push(periodMonth);
     }
 
-    const existing = db.prepare(existingQuery).get(...existingParams);
-    if (existing) {
+    const existingResult = await db.query(existingQuery, existingParams);
+    if (existingResult.rows.length > 0) {
       return res.status(400).json({
         success: false,
         error: {
@@ -181,21 +185,22 @@ const generateCertificate = (req, res) => {
 
     // Calculate totals from payments
     let paymentQuery = `
-      SELECT SUM(gross_amount) as total_rent, SUM(tax_amount) as total_tax
+      SELECT COALESCE(SUM(gross_amount), 0) as total_rent, COALESCE(SUM(tax_amount), 0) as total_tax
       FROM payments
-      WHERE landlord_id = ? AND status = 'COMPLETED'
-      AND strftime('%Y', completed_at) = ?
+      WHERE landlord_id = $1 AND status = 'COMPLETED'
+      AND EXTRACT(YEAR FROM completed_at) = $2
     `;
-    const paymentParams = [landlordId, String(periodYear)];
+    const paymentParams = [landlordId, periodYear];
 
     if (periodType === 'MONTHLY') {
-      paymentQuery += " AND strftime('%m', completed_at) = ?";
-      paymentParams.push(String(periodMonth).padStart(2, '0'));
+      paymentQuery += " AND EXTRACT(MONTH FROM completed_at) = $3";
+      paymentParams.push(periodMonth);
     }
 
-    const totals = db.prepare(paymentQuery).get(...paymentParams);
+    const totalsResult = await db.query(paymentQuery, paymentParams);
+    const totals = totalsResult.rows[0];
 
-    if (!totals.total_rent) {
+    if (!totals.total_rent || parseFloat(totals.total_rent) === 0) {
       return res.status(400).json({
         success: false,
         error: {
@@ -222,12 +227,12 @@ const generateCertificate = (req, res) => {
       issuedAt: new Date().toISOString()
     });
 
-    db.prepare(`
+    await db.query(`
       INSERT INTO tax_certificates (
         id, certificate_number, landlord_id, period_type, period_year, period_month,
         total_rent_received, total_tax_withheld, verification_code, qr_code_data
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+    `, [
       certificateId,
       certificateNumber,
       landlordId,
@@ -238,7 +243,7 @@ const generateCertificate = (req, res) => {
       totals.total_tax,
       verificationCode,
       qrCodeData
-    );
+    ]);
 
     res.status(201).json({
       success: true,
@@ -246,8 +251,8 @@ const generateCertificate = (req, res) => {
         id: certificateId,
         certificateNumber,
         verificationCode,
-        totalRentReceived: totals.total_rent,
-        totalTaxWithheld: totals.total_tax,
+        totalRentReceived: parseFloat(totals.total_rent),
+        totalTaxWithheld: parseFloat(totals.total_tax),
         message: 'Tax certificate generated successfully'
       }
     });
@@ -263,18 +268,18 @@ const generateCertificate = (req, res) => {
 };
 
 // Verify certificate
-const verifyCertificate = (req, res) => {
+const verifyCertificate = async (req, res) => {
   try {
     const { code } = req.params;
 
-    const certificate = db.prepare(`
+    const result = await db.query(`
       SELECT tc.*, u.first_name, u.last_name, u.company_name, u.is_corporate, u.tin_number
       FROM tax_certificates tc
       JOIN users u ON tc.landlord_id = u.id
-      WHERE tc.verification_code = ? OR tc.certificate_number = ?
-    `).get(code, code);
+      WHERE tc.verification_code = $1 OR tc.certificate_number = $1
+    `, [code]);
 
-    if (!certificate) {
+    if (result.rows.length === 0) {
       return res.status(404).json({
         success: false,
         error: {
@@ -283,6 +288,8 @@ const verifyCertificate = (req, res) => {
         }
       });
     }
+
+    const certificate = result.rows[0];
 
     res.json({
       success: true,
@@ -313,7 +320,7 @@ const verifyCertificate = (req, res) => {
 };
 
 // Get tax summary
-const getTaxSummary = (req, res) => {
+const getTaxSummary = async (req, res) => {
   try {
     const user = req.user;
     const { year, landlordId } = req.query;
@@ -332,8 +339,8 @@ const getTaxSummary = (req, res) => {
     }
 
     // Get landlord info
-    const landlord = db.prepare('SELECT * FROM users WHERE id = ?').get(targetLandlordId);
-    if (!landlord) {
+    const landlordResult = await db.query('SELECT * FROM users WHERE id = $1', [targetLandlordId]);
+    if (landlordResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
         error: {
@@ -342,33 +349,35 @@ const getTaxSummary = (req, res) => {
         }
       });
     }
+    const landlord = landlordResult.rows[0];
 
     // Get yearly totals
-    const yearlyTotals = db.prepare(`
-      SELECT SUM(gross_amount) as total_rent, SUM(tax_amount) as total_tax, COUNT(*) as payment_count
+    const yearlyResult = await db.query(`
+      SELECT COALESCE(SUM(gross_amount), 0) as total_rent, COALESCE(SUM(tax_amount), 0) as total_tax, COUNT(*) as payment_count
       FROM payments
-      WHERE landlord_id = ? AND status = 'COMPLETED' AND strftime('%Y', completed_at) = ?
-    `).get(targetLandlordId, String(targetYear));
+      WHERE landlord_id = $1 AND status = 'COMPLETED' AND EXTRACT(YEAR FROM completed_at) = $2
+    `, [targetLandlordId, targetYear]);
+    const yearlyTotals = yearlyResult.rows[0];
 
     // Get monthly breakdown
-    const monthlyBreakdown = db.prepare(`
+    const monthlyResult = await db.query(`
       SELECT
-        strftime('%m', completed_at) as month,
+        EXTRACT(MONTH FROM completed_at) as month,
         SUM(gross_amount) as total_rent,
         SUM(tax_amount) as total_tax,
         COUNT(*) as payment_count
       FROM payments
-      WHERE landlord_id = ? AND status = 'COMPLETED' AND strftime('%Y', completed_at) = ?
-      GROUP BY strftime('%m', completed_at)
+      WHERE landlord_id = $1 AND status = 'COMPLETED' AND EXTRACT(YEAR FROM completed_at) = $2
+      GROUP BY EXTRACT(MONTH FROM completed_at)
       ORDER BY month
-    `).all(targetLandlordId, String(targetYear));
+    `, [targetLandlordId, targetYear]);
 
     // Get certificates for the year
-    const certificates = db.prepare(`
+    const certificatesResult = await db.query(`
       SELECT * FROM tax_certificates
-      WHERE landlord_id = ? AND period_year = ?
+      WHERE landlord_id = $1 AND period_year = $2
       ORDER BY period_month
-    `).all(targetLandlordId, parseInt(targetYear));
+    `, [targetLandlordId, parseInt(targetYear)]);
 
     res.json({
       success: true,
@@ -380,19 +389,19 @@ const getTaxSummary = (req, res) => {
           tinNumber: landlord.tin_number
         },
         summary: {
-          totalRentReceived: yearlyTotals?.total_rent || 0,
-          totalTaxWithheld: yearlyTotals?.total_tax || 0,
-          paymentCount: yearlyTotals?.payment_count || 0,
-          effectiveTaxRate: yearlyTotals?.total_rent ?
-            ((yearlyTotals.total_tax / yearlyTotals.total_rent) * 100).toFixed(2) + '%' : '0%'
+          totalRentReceived: parseFloat(yearlyTotals?.total_rent) || 0,
+          totalTaxWithheld: parseFloat(yearlyTotals?.total_tax) || 0,
+          paymentCount: parseInt(yearlyTotals?.payment_count) || 0,
+          effectiveTaxRate: yearlyTotals?.total_rent && parseFloat(yearlyTotals.total_rent) > 0 ?
+            ((parseFloat(yearlyTotals.total_tax) / parseFloat(yearlyTotals.total_rent)) * 100).toFixed(2) + '%' : '0%'
         },
-        monthlyBreakdown: monthlyBreakdown.map(m => ({
+        monthlyBreakdown: monthlyResult.rows.map(m => ({
           month: parseInt(m.month),
-          totalRent: m.total_rent,
-          totalTax: m.total_tax,
-          paymentCount: m.payment_count
+          totalRent: parseFloat(m.total_rent),
+          totalTax: parseFloat(m.total_tax),
+          paymentCount: parseInt(m.payment_count)
         })),
-        certificates: certificates.map(c => ({
+        certificates: certificatesResult.rows.map(c => ({
           id: c.id,
           certificateNumber: c.certificate_number,
           periodType: c.period_type,
@@ -414,12 +423,12 @@ const getTaxSummary = (req, res) => {
 };
 
 // Download certificate (mark as downloaded)
-const downloadCertificate = (req, res) => {
+const downloadCertificate = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const certificate = db.prepare('SELECT * FROM tax_certificates WHERE id = ?').get(id);
-    if (!certificate) {
+    const result = await db.query('SELECT * FROM tax_certificates WHERE id = $1', [id]);
+    if (result.rows.length === 0) {
       return res.status(404).json({
         success: false,
         error: {
@@ -428,6 +437,8 @@ const downloadCertificate = (req, res) => {
         }
       });
     }
+
+    const certificate = result.rows[0];
 
     // Check authorization
     if (certificate.landlord_id !== req.user.id && !['GRA_OFFICER', 'SYSTEM_ADMIN'].includes(req.user.role)) {
@@ -441,7 +452,7 @@ const downloadCertificate = (req, res) => {
     }
 
     // Mark as downloaded
-    db.prepare('UPDATE tax_certificates SET downloaded_at = datetime("now") WHERE id = ?').run(id);
+    await db.query('UPDATE tax_certificates SET downloaded_at = NOW() WHERE id = $1', [id]);
 
     // In a real implementation, this would return a PDF
     res.json({

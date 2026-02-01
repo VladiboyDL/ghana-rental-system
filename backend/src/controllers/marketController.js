@@ -1,8 +1,8 @@
-const db = require('../config/database');
+const { db } = require('../config/database');
 const { PROPERTY_TYPES } = require('../config/constants');
 
 // Get market rent data
-const getRentCheck = (req, res) => {
+const getRentCheck = async (req, res) => {
   try {
     const { region, district, neighborhood, propertyType, bedrooms } = req.query;
 
@@ -19,27 +19,29 @@ const getRentCheck = (req, res) => {
     // Get latest market data
     let query = `
       SELECT * FROM market_rent_data
-      WHERE region = ? AND district = ? AND property_type = ?
+      WHERE region = $1 AND district = $2 AND property_type = $3
     `;
     const params = [region, district, propertyType];
+    let paramIndex = 4;
 
     if (neighborhood) {
-      query += ' AND neighborhood = ?';
+      query += ` AND neighborhood = $${paramIndex++}`;
       params.push(neighborhood);
     }
 
     if (bedrooms) {
-      query += ' AND bedrooms = ?';
+      query += ` AND bedrooms = $${paramIndex++}`;
       params.push(parseInt(bedrooms));
     }
 
     query += ' ORDER BY period_year DESC, period_month DESC LIMIT 1';
 
-    const marketData = db.prepare(query).get(...params);
+    const result = await db.query(query, params);
+    const marketData = result.rows[0];
 
     if (!marketData) {
       // If no pre-calculated data, generate from actual contracts
-      const contractQuery = `
+      let contractQuery = `
         SELECT
           AVG(c.monthly_rent) as average_rent,
           MIN(c.monthly_rent) as min_rent,
@@ -47,19 +49,20 @@ const getRentCheck = (req, res) => {
           COUNT(*) as sample_size
         FROM contracts c
         JOIN properties p ON c.property_id = p.id
-        WHERE p.region = ? AND p.district = ? AND p.property_type = ?
+        WHERE p.region = $1 AND p.district = $2 AND p.property_type = $3
         AND c.status IN ('ACTIVE', 'EXPIRED')
       `;
       const contractParams = [region, district, propertyType];
 
       if (bedrooms) {
-        contractQuery += ' AND p.bedrooms = ?';
+        contractQuery += ' AND p.bedrooms = $4';
         contractParams.push(parseInt(bedrooms));
       }
 
-      const liveData = db.prepare(contractQuery).get(...contractParams);
+      const liveResult = await db.query(contractQuery, contractParams);
+      const liveData = liveResult.rows[0];
 
-      if (liveData && liveData.sample_size > 0) {
+      if (liveData && parseInt(liveData.sample_size) > 0) {
         return res.json({
           success: true,
           data: {
@@ -69,11 +72,11 @@ const getRentCheck = (req, res) => {
             propertyType,
             propertyTypeName: PROPERTY_TYPES[propertyType]?.name,
             bedrooms: bedrooms ? parseInt(bedrooms) : null,
-            averageRent: Math.round(liveData.average_rent),
-            medianRent: Math.round(liveData.average_rent), // Approximate
-            minRent: liveData.min_rent,
-            maxRent: liveData.max_rent,
-            sampleSize: liveData.sample_size,
+            averageRent: Math.round(parseFloat(liveData.average_rent)),
+            medianRent: Math.round(parseFloat(liveData.average_rent)), // Approximate
+            minRent: parseFloat(liveData.min_rent),
+            maxRent: parseFloat(liveData.max_rent),
+            sampleSize: parseInt(liveData.sample_size),
             dataSource: 'live',
             lastUpdated: new Date().toISOString()
           }
@@ -123,7 +126,7 @@ const getRentCheck = (req, res) => {
 };
 
 // Get rent trends
-const getRentTrends = (req, res) => {
+const getRentTrends = async (req, res) => {
   try {
     const { region, district, propertyType, bedrooms, months = 12 } = req.query;
 
@@ -139,19 +142,21 @@ const getRentTrends = (req, res) => {
 
     let query = `
       SELECT * FROM market_rent_data
-      WHERE region = ? AND district = ? AND property_type = ?
+      WHERE region = $1 AND district = $2 AND property_type = $3
     `;
     const params = [region, district, propertyType];
+    let paramIndex = 4;
 
     if (bedrooms) {
-      query += ' AND bedrooms = ?';
+      query += ` AND bedrooms = $${paramIndex++}`;
       params.push(parseInt(bedrooms));
     }
 
-    query += ' ORDER BY period_year DESC, period_month DESC LIMIT ?';
+    query += ` ORDER BY period_year DESC, period_month DESC LIMIT $${paramIndex}`;
     params.push(parseInt(months));
 
-    const trendData = db.prepare(query).all(...params);
+    const result = await db.query(query, params);
+    const trendData = result.rows;
 
     if (trendData.length === 0) {
       return res.status(404).json({
@@ -179,8 +184,8 @@ const getRentTrends = (req, res) => {
         trend: {
           direction: percentChange > 0 ? 'UP' : percentChange < 0 ? 'DOWN' : 'STABLE',
           percentChange: Math.round(percentChange * 100) / 100,
-          startValue: oldestRent,
-          endValue: newestRent
+          startValue: parseFloat(oldestRent),
+          endValue: parseFloat(newestRent)
         },
         dataPoints: trendData.reverse().map(d => ({
           year: d.period_year,
@@ -203,7 +208,7 @@ const getRentTrends = (req, res) => {
 };
 
 // Compare rent to market
-const compareToMarket = (req, res) => {
+const compareToMarket = async (req, res) => {
   try {
     const { region, district, neighborhood, propertyType, bedrooms, rentAmount } = req.body;
 
@@ -220,22 +225,24 @@ const compareToMarket = (req, res) => {
     // Get market data
     let query = `
       SELECT * FROM market_rent_data
-      WHERE region = ? AND district = ? AND property_type = ?
+      WHERE region = $1 AND district = $2 AND property_type = $3
     `;
     const params = [region, district, propertyType];
+    let paramIndex = 4;
 
     if (bedrooms) {
-      query += ' AND bedrooms = ?';
+      query += ` AND bedrooms = $${paramIndex++}`;
       params.push(parseInt(bedrooms));
     }
 
     query += ' ORDER BY period_year DESC, period_month DESC LIMIT 1';
 
-    let marketData = db.prepare(query).get(...params);
+    const result = await db.query(query, params);
+    let marketData = result.rows[0];
 
     // If no aggregated data, calculate from contracts
     if (!marketData) {
-      const contractStats = db.prepare(`
+      const contractQuery = `
         SELECT
           AVG(c.monthly_rent) as average_rent,
           MIN(c.monthly_rent) as min_rent,
@@ -243,20 +250,23 @@ const compareToMarket = (req, res) => {
           COUNT(*) as sample_size
         FROM contracts c
         JOIN properties p ON c.property_id = p.id
-        WHERE p.region = ? AND p.district = ? AND p.property_type = ?
+        WHERE p.region = $1 AND p.district = $2 AND p.property_type = $3
         AND c.status IN ('ACTIVE', 'EXPIRED')
-        ${bedrooms ? 'AND p.bedrooms = ?' : ''}
-      `).get(...params);
+        ${bedrooms ? 'AND p.bedrooms = $4' : ''}
+      `;
 
-      if (contractStats && contractStats.sample_size > 0) {
+      const contractResult = await db.query(contractQuery, params);
+      const contractStats = contractResult.rows[0];
+
+      if (contractStats && parseInt(contractStats.sample_size) > 0) {
         marketData = {
-          average_rent: contractStats.average_rent,
-          median_rent: contractStats.average_rent,
-          min_rent: contractStats.min_rent,
-          max_rent: contractStats.max_rent,
-          percentile_10: contractStats.min_rent,
-          percentile_90: contractStats.max_rent,
-          sample_size: contractStats.sample_size
+          average_rent: parseFloat(contractStats.average_rent),
+          median_rent: parseFloat(contractStats.average_rent),
+          min_rent: parseFloat(contractStats.min_rent),
+          max_rent: parseFloat(contractStats.max_rent),
+          percentile_10: parseFloat(contractStats.min_rent),
+          percentile_90: parseFloat(contractStats.max_rent),
+          sample_size: parseInt(contractStats.sample_size)
         };
       }
     }
@@ -326,22 +336,22 @@ const compareToMarket = (req, res) => {
 };
 
 // Get available regions/districts (for dropdowns)
-const getLocations = (req, res) => {
+const getLocations = async (req, res) => {
   try {
     // Get unique regions
-    const regions = db.prepare(`
+    const regionsResult = await db.query(`
       SELECT DISTINCT region FROM properties ORDER BY region
-    `).all();
+    `);
 
     // Get districts per region
-    const districts = db.prepare(`
+    const districtsResult = await db.query(`
       SELECT DISTINCT region, district FROM properties ORDER BY region, district
-    `).all();
+    `);
 
     // Group districts by region
     const locationData = {};
-    regions.forEach(r => {
-      locationData[r.region] = districts
+    regionsResult.rows.forEach(r => {
+      locationData[r.region] = districtsResult.rows
         .filter(d => d.region === r.region)
         .map(d => d.district);
     });
@@ -349,7 +359,7 @@ const getLocations = (req, res) => {
     res.json({
       success: true,
       data: {
-        regions: regions.map(r => r.region),
+        regions: regionsResult.rows.map(r => r.region),
         districtsByRegion: locationData,
         propertyTypes: Object.entries(PROPERTY_TYPES).map(([code, info]) => ({
           code,

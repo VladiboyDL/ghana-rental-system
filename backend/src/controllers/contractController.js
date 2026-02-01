@@ -1,4 +1,4 @@
-const db = require('../config/database');
+const { db } = require('../config/database');
 const {
   generateId,
   generateContractNumber,
@@ -39,8 +39,8 @@ const createContract = async (req, res) => {
     }
 
     // Check property exists and belongs to landlord
-    const property = db.prepare('SELECT * FROM properties WHERE id = ?').get(propertyId);
-    if (!property) {
+    const propertyResult = await db.query('SELECT * FROM properties WHERE id = $1', [propertyId]);
+    if (propertyResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
         error: {
@@ -49,6 +49,8 @@ const createContract = async (req, res) => {
         }
       });
     }
+
+    const property = propertyResult.rows[0];
 
     if (property.landlord_id !== landlordId) {
       return res.status(403).json({
@@ -93,10 +95,11 @@ const createContract = async (req, res) => {
     // Find or identify tenant
     let tenant;
     if (tenantId) {
-      tenant = db.prepare('SELECT * FROM users WHERE id = ? AND role LIKE ?').get(tenantId, '%TENANT%');
+      const tenantResult = await db.query("SELECT * FROM users WHERE id = $1 AND role LIKE '%TENANT%'", [tenantId]);
+      tenant = tenantResult.rows[0];
     } else if (tenantEmail || tenantPhone) {
-      tenant = db.prepare('SELECT * FROM users WHERE (email = ? OR phone = ?) AND role LIKE ?')
-        .get(tenantEmail, tenantPhone, '%TENANT%');
+      const tenantResult = await db.query("SELECT * FROM users WHERE (email = $1 OR phone = $2) AND role LIKE '%TENANT%'", [tenantEmail, tenantPhone]);
+      tenant = tenantResult.rows[0];
     }
 
     if (!tenant && !tenantPhone) {
@@ -110,7 +113,8 @@ const createContract = async (req, res) => {
     }
 
     // Get landlord info for notification
-    const landlord = db.prepare('SELECT * FROM users WHERE id = ?').get(landlordId);
+    const landlordResult = await db.query('SELECT * FROM users WHERE id = $1', [landlordId]);
+    const landlord = landlordResult.rows[0];
 
     // Generate confirmation code
     const confirmationCode = generateOTP(6);
@@ -129,16 +133,14 @@ const createContract = async (req, res) => {
     const contractId = generateId();
     const contractNumber = generateContractNumber();
 
-    const stmt = db.prepare(`
+    await db.query(`
       INSERT INTO contracts (
         id, contract_number, property_id, landlord_id, tenant_id,
         contract_type, start_date, end_date, monthly_rent, security_deposit,
         service_charge, advance_months, payment_frequency, tax_rate,
         status, confirmation_code, confirmation_expires_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-
-    stmt.run(
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+    `, [
       contractId,
       contractNumber,
       propertyId,
@@ -156,7 +158,7 @@ const createContract = async (req, res) => {
       tenant ? 'PENDING_TENANT_CONFIRMATION' : 'DRAFT',
       confirmationCode,
       expiryDate.toISOString()
-    );
+    ]);
 
     // Send notification to tenant
     const notificationPhone = tenant?.phone || tenantPhone;
@@ -199,7 +201,7 @@ const createContract = async (req, res) => {
 };
 
 // Get contracts (filtered by role)
-const getContracts = (req, res) => {
+const getContracts = async (req, res) => {
   try {
     const user = req.user;
     const { status, propertyId, page = 1, limit = 20 } = req.query;
@@ -218,39 +220,41 @@ const getContracts = (req, res) => {
       WHERE 1=1
     `;
     const params = [];
+    let paramIndex = 1;
 
     // Filter by role
     if (user.role.includes('LANDLORD')) {
-      query += ' AND c.landlord_id = ?';
+      query += ` AND c.landlord_id = $${paramIndex++}`;
       params.push(user.id);
     } else if (user.role.includes('TENANT')) {
-      query += ' AND c.tenant_id = ?';
+      query += ` AND c.tenant_id = $${paramIndex++}`;
       params.push(user.id);
     }
 
     if (status) {
-      query += ' AND c.status = ?';
+      query += ` AND c.status = $${paramIndex++}`;
       params.push(status);
     }
     if (propertyId) {
-      query += ' AND c.property_id = ?';
+      query += ` AND c.property_id = $${paramIndex++}`;
       params.push(propertyId);
     }
 
     // Count total
     const countQuery = query.replace(/SELECT c\.\*.*FROM/, 'SELECT COUNT(*) as total FROM');
-    const { total } = db.prepare(countQuery).get(...params);
+    const countResult = await db.query(countQuery, params);
+    const total = parseInt(countResult.rows[0].total);
 
     // Add pagination
     const offset = (parseInt(page) - 1) * parseInt(limit);
-    query += ' ORDER BY c.created_at DESC LIMIT ? OFFSET ?';
+    query += ` ORDER BY c.created_at DESC LIMIT $${paramIndex++} OFFSET $${paramIndex}`;
     params.push(parseInt(limit), offset);
 
-    const contracts = db.prepare(query).all(...params);
+    const result = await db.query(query, params);
 
     res.json({
       success: true,
-      data: contracts.map(c => ({
+      data: result.rows.map(c => ({
         id: c.id,
         contractNumber: c.contract_number,
         contractType: c.contract_type,
@@ -279,7 +283,7 @@ const getContracts = (req, res) => {
           id: c.tenant_id,
           name: c.tenant_is_corporate ? c.tenant_company : `${c.tenant_first_name} ${c.tenant_last_name}`
         } : null,
-        tenantConfirmed: c.tenant_confirmed === 1,
+        tenantConfirmed: c.tenant_confirmed === true,
         createdAt: c.created_at
       })),
       meta: {
@@ -301,12 +305,12 @@ const getContracts = (req, res) => {
 };
 
 // Get contract by ID
-const getContractById = (req, res) => {
+const getContractById = async (req, res) => {
   try {
     const { id } = req.params;
     const user = req.user;
 
-    const contract = db.prepare(`
+    const result = await db.query(`
       SELECT c.*,
              p.*, p.id as prop_id,
              l.first_name as landlord_first_name, l.last_name as landlord_last_name,
@@ -319,10 +323,10 @@ const getContractById = (req, res) => {
       JOIN properties p ON c.property_id = p.id
       JOIN users l ON c.landlord_id = l.id
       LEFT JOIN users t ON c.tenant_id = t.id
-      WHERE c.id = ?
-    `).get(id);
+      WHERE c.id = $1
+    `, [id]);
 
-    if (!contract) {
+    if (result.rows.length === 0) {
       return res.status(404).json({
         success: false,
         error: {
@@ -331,6 +335,8 @@ const getContractById = (req, res) => {
         }
       });
     }
+
+    const contract = result.rows[0];
 
     // Check authorization
     const isLandlord = contract.landlord_id === user.id;
@@ -348,9 +354,9 @@ const getContractById = (req, res) => {
     }
 
     // Get payment history
-    const payments = db.prepare(`
-      SELECT * FROM payments WHERE contract_id = ? ORDER BY initiated_at DESC LIMIT 10
-    `).all(id);
+    const paymentsResult = await db.query(`
+      SELECT * FROM payments WHERE contract_id = $1 ORDER BY initiated_at DESC LIMIT 10
+    `, [id]);
 
     res.json({
       success: true,
@@ -369,10 +375,10 @@ const getContractById = (req, res) => {
         taxRate: contract.tax_rate,
         totalTaxWithheld: contract.total_tax_withheld,
         contractDocumentUrl: contract.contract_document_url,
-        customClauses: JSON.parse(contract.custom_clauses || '[]'),
-        landlordSigned: contract.landlord_signed === 1,
+        customClauses: typeof contract.custom_clauses === 'string' ? JSON.parse(contract.custom_clauses || '[]') : (contract.custom_clauses || []),
+        landlordSigned: contract.landlord_signed === true,
         landlordSignedAt: contract.landlord_signed_at,
-        tenantConfirmed: contract.tenant_confirmed === 1,
+        tenantConfirmed: contract.tenant_confirmed === true,
         tenantConfirmedAt: contract.tenant_confirmed_at,
         property: {
           id: contract.property_id,
@@ -385,7 +391,7 @@ const getContractById = (req, res) => {
           propertyTypeName: PROPERTY_TYPES[contract.property_type]?.name,
           bedrooms: contract.bedrooms,
           bathrooms: contract.bathrooms,
-          isFurnished: contract.is_furnished === 1
+          isFurnished: contract.is_furnished === true
         },
         landlord: {
           id: contract.landlord_id,
@@ -399,7 +405,7 @@ const getContractById = (req, res) => {
           phone: contract.tenant_phone,
           email: contract.tenant_email
         } : null,
-        payments: payments.map(p => ({
+        payments: paymentsResult.rows.map(p => ({
           id: p.id,
           reference: p.payment_reference,
           grossAmount: p.gross_amount,
@@ -432,8 +438,8 @@ const confirmContract = async (req, res) => {
     const { confirmationCode } = req.body;
     const tenantId = req.user.id;
 
-    const contract = db.prepare('SELECT * FROM contracts WHERE id = ?').get(id);
-    if (!contract) {
+    const contractResult = await db.query('SELECT * FROM contracts WHERE id = $1', [id]);
+    if (contractResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
         error: {
@@ -442,6 +448,8 @@ const confirmContract = async (req, res) => {
         }
       });
     }
+
+    const contract = contractResult.rows[0];
 
     if (contract.status !== 'PENDING_TENANT_CONFIRMATION') {
       return res.status(400).json({
@@ -476,22 +484,22 @@ const confirmContract = async (req, res) => {
     }
 
     // Update contract
-    db.prepare(`
+    await db.query(`
       UPDATE contracts
       SET status = 'ACTIVE',
-          tenant_id = ?,
-          tenant_confirmed = 1,
-          tenant_confirmed_at = datetime('now'),
-          updated_at = datetime('now')
-      WHERE id = ?
-    `).run(tenantId, id);
+          tenant_id = $1,
+          tenant_confirmed = true,
+          tenant_confirmed_at = NOW(),
+          updated_at = NOW()
+      WHERE id = $2
+    `, [tenantId, id]);
 
     // Mark property as not available
-    db.prepare('UPDATE properties SET is_available = 0, updated_at = datetime("now") WHERE id = ?')
-      .run(contract.property_id);
+    await db.query('UPDATE properties SET is_available = false, updated_at = NOW() WHERE id = $1', [contract.property_id]);
 
     // Notify landlord
-    const landlord = db.prepare('SELECT * FROM users WHERE id = ?').get(contract.landlord_id);
+    const landlordResult = await db.query('SELECT * FROM users WHERE id = $1', [contract.landlord_id]);
+    const landlord = landlordResult.rows[0];
     if (landlord) {
       await sendSMS(
         landlord.phone,
@@ -524,8 +532,8 @@ const objectToContract = async (req, res) => {
     const { id } = req.params;
     const { reason, description } = req.body;
 
-    const contract = db.prepare('SELECT * FROM contracts WHERE id = ?').get(id);
-    if (!contract) {
+    const contractResult = await db.query('SELECT * FROM contracts WHERE id = $1', [id]);
+    if (contractResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
         error: {
@@ -534,6 +542,8 @@ const objectToContract = async (req, res) => {
         }
       });
     }
+
+    const contract = contractResult.rows[0];
 
     if (contract.status !== 'PENDING_TENANT_CONFIRMATION') {
       return res.status(400).json({
@@ -546,24 +556,25 @@ const objectToContract = async (req, res) => {
     }
 
     // Update contract status
-    db.prepare(`
+    await db.query(`
       UPDATE contracts
       SET status = 'DISPUTED',
-          updated_at = datetime('now')
-      WHERE id = ?
-    `).run(id);
+          updated_at = NOW()
+      WHERE id = $1
+    `, [id]);
 
     // Create dispute
     const disputeId = generateId();
     const disputeNumber = `DSP-${new Date().getFullYear()}-${Math.floor(Math.random() * 99999).toString().padStart(5, '0')}`;
 
-    db.prepare(`
+    await db.query(`
       INSERT INTO disputes (id, dispute_number, contract_id, filed_by, filed_against, dispute_type, description)
-      VALUES (?, ?, ?, ?, ?, 'CONTRACT_TERMS', ?)
-    `).run(disputeId, disputeNumber, id, req.user.id, contract.landlord_id, `${reason}: ${description}`);
+      VALUES ($1, $2, $3, $4, $5, 'CONTRACT_TERMS', $6)
+    `, [disputeId, disputeNumber, id, req.user.id, contract.landlord_id, `${reason}: ${description}`]);
 
     // Notify landlord
-    const landlord = db.prepare('SELECT * FROM users WHERE id = ?').get(contract.landlord_id);
+    const landlordResult = await db.query('SELECT * FROM users WHERE id = $1', [contract.landlord_id]);
+    const landlord = landlordResult.rows[0];
     if (landlord) {
       await sendSMS(
         landlord.phone,
@@ -597,8 +608,8 @@ const terminateContract = async (req, res) => {
     const { reason } = req.body;
     const userId = req.user.id;
 
-    const contract = db.prepare('SELECT * FROM contracts WHERE id = ?').get(id);
-    if (!contract) {
+    const contractResult = await db.query('SELECT * FROM contracts WHERE id = $1', [id]);
+    if (contractResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
         error: {
@@ -607,6 +618,8 @@ const terminateContract = async (req, res) => {
         }
       });
     }
+
+    const contract = contractResult.rows[0];
 
     // Check authorization
     if (contract.landlord_id !== userId && contract.tenant_id !== userId && req.user.role !== 'SYSTEM_ADMIN') {
@@ -630,23 +643,23 @@ const terminateContract = async (req, res) => {
     }
 
     // Update contract
-    db.prepare(`
+    await db.query(`
       UPDATE contracts
       SET status = 'TERMINATED',
-          terminated_at = datetime('now'),
-          termination_reason = ?,
-          termination_initiated_by = ?,
-          updated_at = datetime('now')
-      WHERE id = ?
-    `).run(reason, userId, id);
+          terminated_at = NOW(),
+          termination_reason = $1,
+          termination_initiated_by = $2,
+          updated_at = NOW()
+      WHERE id = $3
+    `, [reason, userId, id]);
 
     // Mark property as available
-    db.prepare('UPDATE properties SET is_available = 1, updated_at = datetime("now") WHERE id = ?')
-      .run(contract.property_id);
+    await db.query('UPDATE properties SET is_available = true, updated_at = NOW() WHERE id = $1', [contract.property_id]);
 
     // Notify other party
     const otherPartyId = userId === contract.landlord_id ? contract.tenant_id : contract.landlord_id;
-    const otherParty = db.prepare('SELECT * FROM users WHERE id = ?').get(otherPartyId);
+    const otherPartyResult = await db.query('SELECT * FROM users WHERE id = $1', [otherPartyId]);
+    const otherParty = otherPartyResult.rows[0];
     if (otherParty) {
       await sendSMS(
         otherParty.phone,
@@ -679,8 +692,8 @@ const renewContract = async (req, res) => {
     const { id } = req.params;
     const { newEndDate, newMonthlyRent, newAdvanceMonths } = req.body;
 
-    const contract = db.prepare('SELECT * FROM contracts WHERE id = ?').get(id);
-    if (!contract) {
+    const contractResult = await db.query('SELECT * FROM contracts WHERE id = $1', [id]);
+    if (contractResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
         error: {
@@ -689,6 +702,8 @@ const renewContract = async (req, res) => {
         }
       });
     }
+
+    const contract = contractResult.rows[0];
 
     if (contract.landlord_id !== req.user.id) {
       return res.status(403).json({
@@ -720,14 +735,14 @@ const renewContract = async (req, res) => {
     const startDate = new Date(contract.end_date);
     startDate.setDate(startDate.getDate() + 1);
 
-    db.prepare(`
+    await db.query(`
       INSERT INTO contracts (
         id, contract_number, property_id, landlord_id, tenant_id,
         contract_type, start_date, end_date, monthly_rent, security_deposit,
         service_charge, advance_months, payment_frequency, tax_rate,
         status, confirmation_code, confirmation_expires_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING_TENANT_CONFIRMATION', ?, ?)
-    `).run(
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 'PENDING_TENANT_CONFIRMATION', $15, $16)
+    `, [
       newContractId,
       newContractNumber,
       contract.property_id,
@@ -744,10 +759,11 @@ const renewContract = async (req, res) => {
       contract.tax_rate,
       confirmationCode,
       expiryDate.toISOString()
-    );
+    ]);
 
     // Notify tenant
-    const tenant = db.prepare('SELECT * FROM users WHERE id = ?').get(contract.tenant_id);
+    const tenantResult = await db.query('SELECT * FROM users WHERE id = $1', [contract.tenant_id]);
+    const tenant = tenantResult.rows[0];
     if (tenant) {
       await sendSMS(
         tenant.phone,
@@ -776,27 +792,27 @@ const renewContract = async (req, res) => {
 };
 
 // Get pending confirmations for tenant
-const getPendingConfirmations = (req, res) => {
+const getPendingConfirmations = async (req, res) => {
   try {
     const userId = req.user.id;
     const userPhone = req.user.phone;
 
     // Find contracts pending confirmation for this tenant (by ID or phone)
-    const contracts = db.prepare(`
+    const result = await db.query(`
       SELECT c.*, p.property_code, p.digital_address, p.neighborhood, p.district, p.property_type,
              l.first_name, l.last_name, l.company_name, l.is_corporate
       FROM contracts c
       JOIN properties p ON c.property_id = p.id
       JOIN users l ON c.landlord_id = l.id
       WHERE c.status = 'PENDING_TENANT_CONFIRMATION'
-      AND (c.tenant_id = ? OR c.tenant_id IS NULL)
-      AND c.confirmation_expires_at > datetime('now')
+      AND (c.tenant_id = $1 OR c.tenant_id IS NULL)
+      AND c.confirmation_expires_at > NOW()
       ORDER BY c.created_at DESC
-    `).all(userId);
+    `, [userId]);
 
     res.json({
       success: true,
-      data: contracts.map(c => ({
+      data: result.rows.map(c => ({
         id: c.id,
         contractNumber: c.contract_number,
         monthlyRent: c.monthly_rent,

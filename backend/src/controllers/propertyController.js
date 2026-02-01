@@ -1,4 +1,4 @@
-const db = require('../config/database');
+const { db } = require('../config/database');
 const { generateId, generatePropertyCode, validateDigitalAddress } = require('../utils/helpers');
 const { validateDigitalAddress: validateWithLands, verifyOwnership } = require('../simulators/lands');
 const { PROPERTY_TYPES, PROPERTY_STATUS } = require('../config/constants');
@@ -64,8 +64,8 @@ const createProperty = async (req, res) => {
     }
 
     // Check if property already exists
-    const existingProperty = db.prepare('SELECT id FROM properties WHERE digital_address = ?').get(digitalAddress);
-    if (existingProperty) {
+    const existingResult = await db.query('SELECT id FROM properties WHERE digital_address = $1', [digitalAddress]);
+    if (existingResult.rows.length > 0) {
       return res.status(400).json({
         success: false,
         error: {
@@ -92,16 +92,14 @@ const createProperty = async (req, res) => {
     const propertyId = generateId();
 
     // Insert property
-    const stmt = db.prepare(`
+    await db.query(`
       INSERT INTO properties (
         id, landlord_id, property_code, digital_address, region, district, city, neighborhood,
         street_address, gps_latitude, gps_longitude, property_type, property_category,
         bedrooms, bathrooms, floor_area_sqm, year_built, is_furnished, has_parking,
         has_security, has_generator, amenities, ownership_type, status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-
-    stmt.run(
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)
+    `, [
       propertyId,
       landlordId,
       propertyCode,
@@ -119,19 +117,22 @@ const createProperty = async (req, res) => {
       bathrooms || null,
       floorAreaSqm || null,
       yearBuilt || null,
-      isFurnished ? 1 : 0,
-      hasParking ? 1 : 0,
-      hasSecurity ? 1 : 0,
-      hasGenerator ? 1 : 0,
+      isFurnished ? true : false,
+      hasParking ? true : false,
+      hasSecurity ? true : false,
+      hasGenerator ? true : false,
       JSON.stringify(amenities || []),
       ownershipType,
       'PENDING_VERIFICATION'
-    );
+    ]);
 
     // Simulate auto-verification after short delay (for demo)
-    setTimeout(() => {
-      db.prepare('UPDATE properties SET status = ?, ownership_verified = 1, updated_at = datetime("now") WHERE id = ?')
-        .run('VERIFIED', propertyId);
+    setTimeout(async () => {
+      try {
+        await db.query("UPDATE properties SET status = $1, ownership_verified = true, updated_at = NOW() WHERE id = $2", ['VERIFIED', propertyId]);
+      } catch (err) {
+        console.error('Auto-verification error:', err);
+      }
     }, 5000);
 
     res.status(201).json({
@@ -157,51 +158,53 @@ const createProperty = async (req, res) => {
 };
 
 // Get properties (filtered by role)
-const getProperties = (req, res) => {
+const getProperties = async (req, res) => {
   try {
     const user = req.user;
     const { status, region, district, propertyType, page = 1, limit = 20 } = req.query;
 
     let query = 'SELECT p.*, u.first_name, u.last_name, u.company_name, u.is_corporate FROM properties p JOIN users u ON p.landlord_id = u.id WHERE 1=1';
     const params = [];
+    let paramIndex = 1;
 
     // Filter by role
     if (user.role.includes('LANDLORD')) {
-      query += ' AND p.landlord_id = ?';
+      query += ` AND p.landlord_id = $${paramIndex++}`;
       params.push(user.id);
     }
 
     if (status) {
-      query += ' AND p.status = ?';
+      query += ` AND p.status = $${paramIndex++}`;
       params.push(status);
     }
     if (region) {
-      query += ' AND p.region = ?';
+      query += ` AND p.region = $${paramIndex++}`;
       params.push(region);
     }
     if (district) {
-      query += ' AND p.district = ?';
+      query += ` AND p.district = $${paramIndex++}`;
       params.push(district);
     }
     if (propertyType) {
-      query += ' AND p.property_type = ?';
+      query += ` AND p.property_type = $${paramIndex++}`;
       params.push(propertyType);
     }
 
     // Count total
     const countQuery = query.replace('SELECT p.*, u.first_name, u.last_name, u.company_name, u.is_corporate', 'SELECT COUNT(*) as total');
-    const { total } = db.prepare(countQuery).get(...params);
+    const countResult = await db.query(countQuery, params);
+    const total = parseInt(countResult.rows[0].total);
 
     // Add pagination
     const offset = (parseInt(page) - 1) * parseInt(limit);
-    query += ' ORDER BY p.created_at DESC LIMIT ? OFFSET ?';
+    query += ` ORDER BY p.created_at DESC LIMIT $${paramIndex++} OFFSET $${paramIndex}`;
     params.push(parseInt(limit), offset);
 
-    const properties = db.prepare(query).all(...params);
+    const result = await db.query(query, params);
 
     res.json({
       success: true,
-      data: properties.map(p => ({
+      data: result.rows.map(p => ({
         id: p.id,
         propertyCode: p.property_code,
         digitalAddress: p.digital_address,
@@ -214,13 +217,13 @@ const getProperties = (req, res) => {
         propertyCategory: p.property_category,
         bedrooms: p.bedrooms,
         bathrooms: p.bathrooms,
-        isFurnished: p.is_furnished === 1,
-        hasParking: p.has_parking === 1,
-        hasSecurity: p.has_security === 1,
+        isFurnished: p.is_furnished === true,
+        hasParking: p.has_parking === true,
+        hasSecurity: p.has_security === true,
         status: p.status,
-        isAvailable: p.is_available === 1,
-        photos: JSON.parse(p.photos || '[]'),
-        ownershipVerified: p.ownership_verified === 1,
+        isAvailable: p.is_available === true,
+        photos: typeof p.photos === 'string' ? JSON.parse(p.photos || '[]') : (p.photos || []),
+        ownershipVerified: p.ownership_verified === true,
         landlord: {
           id: p.landlord_id,
           name: p.is_corporate ? p.company_name : `${p.first_name} ${p.last_name}`
@@ -246,19 +249,19 @@ const getProperties = (req, res) => {
 };
 
 // Get property by ID
-const getPropertyById = (req, res) => {
+const getPropertyById = async (req, res) => {
   try {
     const { id } = req.params;
     const user = req.user;
 
-    const property = db.prepare(`
+    const result = await db.query(`
       SELECT p.*, u.first_name, u.last_name, u.company_name, u.is_corporate, u.phone as landlord_phone, u.email as landlord_email
       FROM properties p
       JOIN users u ON p.landlord_id = u.id
-      WHERE p.id = ?
-    `).get(id);
+      WHERE p.id = $1
+    `, [id]);
 
-    if (!property) {
+    if (result.rows.length === 0) {
       return res.status(404).json({
         success: false,
         error: {
@@ -267,6 +270,8 @@ const getPropertyById = (req, res) => {
         }
       });
     }
+
+    const property = result.rows[0];
 
     // Check authorization for non-admin users
     if (user.role.includes('LANDLORD') && property.landlord_id !== user.id) {
@@ -280,9 +285,10 @@ const getPropertyById = (req, res) => {
     }
 
     // Get active contracts count
-    const contractCount = db.prepare(`
-      SELECT COUNT(*) as count FROM contracts WHERE property_id = ? AND status = 'ACTIVE'
-    `).get(id).count;
+    const contractResult = await db.query(`
+      SELECT COUNT(*) as count FROM contracts WHERE property_id = $1 AND status = 'ACTIVE'
+    `, [id]);
+    const contractCount = parseInt(contractResult.rows[0].count);
 
     res.json({
       success: true,
@@ -304,17 +310,17 @@ const getPropertyById = (req, res) => {
         bathrooms: property.bathrooms,
         floorAreaSqm: property.floor_area_sqm,
         yearBuilt: property.year_built,
-        isFurnished: property.is_furnished === 1,
-        hasParking: property.has_parking === 1,
-        hasSecurity: property.has_security === 1,
-        hasGenerator: property.has_generator === 1,
-        amenities: JSON.parse(property.amenities || '[]'),
+        isFurnished: property.is_furnished === true,
+        hasParking: property.has_parking === true,
+        hasSecurity: property.has_security === true,
+        hasGenerator: property.has_generator === true,
+        amenities: typeof property.amenities === 'string' ? JSON.parse(property.amenities || '[]') : (property.amenities || []),
         ownershipType: property.ownership_type,
         ownershipDocumentUrl: property.ownership_document_url,
-        ownershipVerified: property.ownership_verified === 1,
-        photos: JSON.parse(property.photos || '[]'),
+        ownershipVerified: property.ownership_verified === true,
+        photos: typeof property.photos === 'string' ? JSON.parse(property.photos || '[]') : (property.photos || []),
         status: property.status,
-        isAvailable: property.is_available === 1,
+        isAvailable: property.is_available === true,
         activeContracts: contractCount,
         landlord: {
           id: property.landlord_id,
@@ -338,14 +344,14 @@ const getPropertyById = (req, res) => {
 };
 
 // Update property
-const updateProperty = (req, res) => {
+const updateProperty = async (req, res) => {
   try {
     const { id } = req.params;
     const landlordId = req.user.id;
 
     // Check if property exists and belongs to user
-    const property = db.prepare('SELECT * FROM properties WHERE id = ?').get(id);
-    if (!property) {
+    const checkResult = await db.query('SELECT * FROM properties WHERE id = $1', [id]);
+    if (checkResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
         error: {
@@ -354,6 +360,8 @@ const updateProperty = (req, res) => {
         }
       });
     }
+
+    const property = checkResult.rows[0];
 
     if (property.landlord_id !== landlordId && req.user.role !== 'SYSTEM_ADMIN') {
       return res.status(403).json({
@@ -384,20 +392,21 @@ const updateProperty = (req, res) => {
     // Build update query
     const updates = [];
     const params = [];
+    let paramIndex = 1;
 
-    if (city !== undefined) { updates.push('city = ?'); params.push(city); }
-    if (neighborhood !== undefined) { updates.push('neighborhood = ?'); params.push(neighborhood); }
-    if (streetAddress !== undefined) { updates.push('street_address = ?'); params.push(streetAddress); }
-    if (bedrooms !== undefined) { updates.push('bedrooms = ?'); params.push(bedrooms); }
-    if (bathrooms !== undefined) { updates.push('bathrooms = ?'); params.push(bathrooms); }
-    if (floorAreaSqm !== undefined) { updates.push('floor_area_sqm = ?'); params.push(floorAreaSqm); }
-    if (yearBuilt !== undefined) { updates.push('year_built = ?'); params.push(yearBuilt); }
-    if (isFurnished !== undefined) { updates.push('is_furnished = ?'); params.push(isFurnished ? 1 : 0); }
-    if (hasParking !== undefined) { updates.push('has_parking = ?'); params.push(hasParking ? 1 : 0); }
-    if (hasSecurity !== undefined) { updates.push('has_security = ?'); params.push(hasSecurity ? 1 : 0); }
-    if (hasGenerator !== undefined) { updates.push('has_generator = ?'); params.push(hasGenerator ? 1 : 0); }
-    if (amenities !== undefined) { updates.push('amenities = ?'); params.push(JSON.stringify(amenities)); }
-    if (isAvailable !== undefined) { updates.push('is_available = ?'); params.push(isAvailable ? 1 : 0); }
+    if (city !== undefined) { updates.push(`city = $${paramIndex++}`); params.push(city); }
+    if (neighborhood !== undefined) { updates.push(`neighborhood = $${paramIndex++}`); params.push(neighborhood); }
+    if (streetAddress !== undefined) { updates.push(`street_address = $${paramIndex++}`); params.push(streetAddress); }
+    if (bedrooms !== undefined) { updates.push(`bedrooms = $${paramIndex++}`); params.push(bedrooms); }
+    if (bathrooms !== undefined) { updates.push(`bathrooms = $${paramIndex++}`); params.push(bathrooms); }
+    if (floorAreaSqm !== undefined) { updates.push(`floor_area_sqm = $${paramIndex++}`); params.push(floorAreaSqm); }
+    if (yearBuilt !== undefined) { updates.push(`year_built = $${paramIndex++}`); params.push(yearBuilt); }
+    if (isFurnished !== undefined) { updates.push(`is_furnished = $${paramIndex++}`); params.push(isFurnished ? true : false); }
+    if (hasParking !== undefined) { updates.push(`has_parking = $${paramIndex++}`); params.push(hasParking ? true : false); }
+    if (hasSecurity !== undefined) { updates.push(`has_security = $${paramIndex++}`); params.push(hasSecurity ? true : false); }
+    if (hasGenerator !== undefined) { updates.push(`has_generator = $${paramIndex++}`); params.push(hasGenerator ? true : false); }
+    if (amenities !== undefined) { updates.push(`amenities = $${paramIndex++}`); params.push(JSON.stringify(amenities)); }
+    if (isAvailable !== undefined) { updates.push(`is_available = $${paramIndex++}`); params.push(isAvailable ? true : false); }
 
     if (updates.length === 0) {
       return res.status(400).json({
@@ -409,10 +418,10 @@ const updateProperty = (req, res) => {
       });
     }
 
-    updates.push('updated_at = datetime("now")');
+    updates.push(`updated_at = NOW()`);
     params.push(id);
 
-    db.prepare(`UPDATE properties SET ${updates.join(', ')} WHERE id = ?`).run(...params);
+    await db.query(`UPDATE properties SET ${updates.join(', ')} WHERE id = $${paramIndex}`, params);
 
     res.json({
       success: true,
@@ -433,7 +442,7 @@ const updateProperty = (req, res) => {
 };
 
 // Search available properties (public)
-const searchProperties = (req, res) => {
+const searchProperties = async (req, res) => {
   try {
     const {
       region,
@@ -455,57 +464,59 @@ const searchProperties = (req, res) => {
              (SELECT monthly_rent FROM contracts WHERE property_id = p.id ORDER BY created_at DESC LIMIT 1) as last_rent
       FROM properties p
       JOIN users u ON p.landlord_id = u.id
-      WHERE p.status = 'VERIFIED' AND p.is_available = 1
+      WHERE p.status = 'VERIFIED' AND p.is_available = true
     `;
     const params = [];
+    let paramIndex = 1;
 
     if (region) {
-      query += ' AND p.region = ?';
+      query += ` AND p.region = $${paramIndex++}`;
       params.push(region);
     }
     if (district) {
-      query += ' AND p.district = ?';
+      query += ` AND p.district = $${paramIndex++}`;
       params.push(district);
     }
     if (neighborhood) {
-      query += ' AND p.neighborhood LIKE ?';
+      query += ` AND p.neighborhood ILIKE $${paramIndex++}`;
       params.push(`%${neighborhood}%`);
     }
     if (propertyType) {
-      query += ' AND p.property_type = ?';
+      query += ` AND p.property_type = $${paramIndex++}`;
       params.push(propertyType);
     }
     if (propertyCategory) {
-      query += ' AND p.property_category = ?';
+      query += ` AND p.property_category = $${paramIndex++}`;
       params.push(propertyCategory);
     }
     if (minBedrooms) {
-      query += ' AND p.bedrooms >= ?';
+      query += ` AND p.bedrooms >= $${paramIndex++}`;
       params.push(parseInt(minBedrooms));
     }
     if (maxBedrooms) {
-      query += ' AND p.bedrooms <= ?';
+      query += ` AND p.bedrooms <= $${paramIndex++}`;
       params.push(parseInt(maxBedrooms));
     }
     if (isFurnished !== undefined) {
-      query += ' AND p.is_furnished = ?';
-      params.push(isFurnished === 'true' ? 1 : 0);
+      query += ` AND p.is_furnished = $${paramIndex++}`;
+      params.push(isFurnished === 'true');
     }
 
     // Count total
     const countQuery = query.replace(/SELECT p\.\*.*FROM/, 'SELECT COUNT(*) as total FROM');
-    const { total } = db.prepare(countQuery).get(...params);
+    const countResult = await db.query(countQuery, params);
+    const total = parseInt(countResult.rows[0].total);
 
     // Add pagination
     const offset = (parseInt(page) - 1) * parseInt(limit);
-    query += ' ORDER BY p.created_at DESC LIMIT ? OFFSET ?';
+    query += ` ORDER BY p.created_at DESC LIMIT $${paramIndex++} OFFSET $${paramIndex}`;
     params.push(parseInt(limit), offset);
 
-    const properties = db.prepare(query).all(...params);
+    const result = await db.query(query, params);
 
     res.json({
       success: true,
-      data: properties.map(p => ({
+      data: result.rows.map(p => ({
         id: p.id,
         propertyCode: p.property_code,
         digitalAddress: p.digital_address,
@@ -517,10 +528,10 @@ const searchProperties = (req, res) => {
         propertyCategory: p.property_category,
         bedrooms: p.bedrooms,
         bathrooms: p.bathrooms,
-        isFurnished: p.is_furnished === 1,
-        hasParking: p.has_parking === 1,
-        hasSecurity: p.has_security === 1,
-        photos: JSON.parse(p.photos || '[]'),
+        isFurnished: p.is_furnished === true,
+        hasParking: p.has_parking === true,
+        hasSecurity: p.has_security === true,
+        photos: typeof p.photos === 'string' ? JSON.parse(p.photos || '[]') : (p.photos || []),
         lastRent: p.last_rent,
         landlord: {
           name: p.is_corporate ? p.company_name : `${p.first_name} ${p.last_name}`
@@ -545,13 +556,13 @@ const searchProperties = (req, res) => {
 };
 
 // Upload property photos
-const uploadPhotos = (req, res) => {
+const uploadPhotos = async (req, res) => {
   try {
     const { id } = req.params;
     const { photos } = req.body; // Array of photo URLs
 
-    const property = db.prepare('SELECT * FROM properties WHERE id = ?').get(id);
-    if (!property) {
+    const checkResult = await db.query('SELECT * FROM properties WHERE id = $1', [id]);
+    if (checkResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
         error: {
@@ -560,6 +571,8 @@ const uploadPhotos = (req, res) => {
         }
       });
     }
+
+    const property = checkResult.rows[0];
 
     if (property.landlord_id !== req.user.id && req.user.role !== 'SYSTEM_ADMIN') {
       return res.status(403).json({
@@ -572,11 +585,10 @@ const uploadPhotos = (req, res) => {
     }
 
     // Merge with existing photos
-    const existingPhotos = JSON.parse(property.photos || '[]');
+    const existingPhotos = typeof property.photos === 'string' ? JSON.parse(property.photos || '[]') : (property.photos || []);
     const updatedPhotos = [...existingPhotos, ...(photos || [])];
 
-    db.prepare('UPDATE properties SET photos = ?, updated_at = datetime("now") WHERE id = ?')
-      .run(JSON.stringify(updatedPhotos), id);
+    await db.query('UPDATE properties SET photos = $1, updated_at = NOW() WHERE id = $2', [JSON.stringify(updatedPhotos), id]);
 
     res.json({
       success: true,
@@ -601,8 +613,8 @@ const requestVerification = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const property = db.prepare('SELECT * FROM properties WHERE id = ?').get(id);
-    if (!property) {
+    const checkResult = await db.query('SELECT * FROM properties WHERE id = $1', [id]);
+    if (checkResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
         error: {
@@ -611,6 +623,8 @@ const requestVerification = async (req, res) => {
         }
       });
     }
+
+    const property = checkResult.rows[0];
 
     if (property.landlord_id !== req.user.id) {
       return res.status(403).json({
@@ -626,11 +640,11 @@ const requestVerification = async (req, res) => {
     const verification = await verifyOwnership(property.digital_address, req.user.ghana_card_number);
 
     if (verification.data?.verified) {
-      db.prepare(`
+      await db.query(`
         UPDATE properties
-        SET status = 'VERIFIED', ownership_verified = 1, updated_at = datetime('now')
-        WHERE id = ?
-      `).run(id);
+        SET status = 'VERIFIED', ownership_verified = true, updated_at = NOW()
+        WHERE id = $1
+      `, [id]);
 
       return res.json({
         success: true,
