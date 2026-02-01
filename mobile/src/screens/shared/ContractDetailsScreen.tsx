@@ -84,7 +84,8 @@ export default function ContractDetailsScreen() {
     return null;
   }
 
-  const taxAmount = contract.monthlyRent * 0.08;
+  const taxRate = contract.taxRate || 0.08;
+  const taxAmount = contract.monthlyRent * taxRate;
   const netAmount = contract.monthlyRent - taxAmount;
 
   return (
@@ -210,7 +211,7 @@ export default function ContractDetailsScreen() {
             </View>
 
             <View style={styles.financialRow}>
-              <Text style={styles.financialLabel}>Withholding Tax (8%)</Text>
+              <Text style={styles.financialLabel}>Withholding Tax ({(taxRate * 100).toFixed(0)}%)</Text>
               <Text style={[styles.financialValue, { color: colors.error }]}>
                 -{formatCurrency(taxAmount)}
               </Text>

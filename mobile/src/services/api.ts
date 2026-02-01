@@ -206,11 +206,11 @@ class ApiService {
   // Users API (alias as 'user' for compatibility)
   users = {
     getProfile: async () => {
-      return this.client.get('/users/profile');
+      return this.client.get('/users/me');
     },
 
     updateProfile: async (data: Partial<User>) => {
-      return this.client.put('/users/profile', data);
+      return this.client.put('/users/me', data);
     },
 
     searchTenants: async (query: string) => {
