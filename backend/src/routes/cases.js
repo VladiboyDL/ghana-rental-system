@@ -8,8 +8,8 @@ const { ROLES } = require('../config/constants');
 router.post('/anonymous', caseController.submitAnonymousTip);
 
 // Authenticated routes
-router.get('/', authenticate, authorize(ROLES.SYSTEM_ADMIN, ROLES.GRA_OFFICER, ROLES.DISTRICT_OFFICER, ROLES.INSPECTOR), caseController.getCases);
-router.get('/:id', authenticate, authorize(ROLES.SYSTEM_ADMIN, ROLES.GRA_OFFICER, ROLES.DISTRICT_OFFICER, ROLES.INSPECTOR), caseController.getCaseById);
+router.get('/', authenticate, authorize(ROLES.SYSTEM_ADMIN, ROLES.GRA_OFFICER, ROLES.GRA_SUPERVISOR, ROLES.DISTRICT_OFFICER, ROLES.INSPECTOR), caseController.getCases);
+router.get('/:id', authenticate, authorize(ROLES.SYSTEM_ADMIN, ROLES.GRA_OFFICER, ROLES.GRA_SUPERVISOR, ROLES.DISTRICT_OFFICER, ROLES.INSPECTOR), caseController.getCaseById);
 router.post('/', authenticate, authorize(ROLES.SYSTEM_ADMIN, ROLES.GRA_OFFICER, ROLES.DISTRICT_OFFICER), caseController.createCase);
 router.post('/:id/assign', authenticate, authorize(ROLES.SYSTEM_ADMIN, ROLES.GRA_OFFICER, ROLES.DISTRICT_OFFICER), caseController.assignInspector);
 router.post('/:id/schedule', authenticate, authorize(ROLES.INSPECTOR), caseController.scheduleInspection);

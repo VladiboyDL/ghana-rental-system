@@ -117,7 +117,7 @@ function App() {
         <Route
           path="/properties/new"
           element={
-            <ProtectedRoute allowedRoles={['LANDLORD']}>
+            <ProtectedRoute allowedRoles={['LANDLORD_INDIVIDUAL', 'LANDLORD_CORPORATE']}>
               <PropertyForm />
             </ProtectedRoute>
           }
@@ -133,7 +133,7 @@ function App() {
         <Route
           path="/properties/:id/edit"
           element={
-            <ProtectedRoute allowedRoles={['LANDLORD']}>
+            <ProtectedRoute allowedRoles={['LANDLORD_INDIVIDUAL', 'LANDLORD_CORPORATE']}>
               <PropertyForm />
             </ProtectedRoute>
           }
@@ -151,7 +151,7 @@ function App() {
         <Route
           path="/contracts/new"
           element={
-            <ProtectedRoute allowedRoles={['LANDLORD']}>
+            <ProtectedRoute allowedRoles={['LANDLORD_INDIVIDUAL', 'LANDLORD_CORPORATE']}>
               <ContractForm />
             </ProtectedRoute>
           }
@@ -187,7 +187,7 @@ function App() {
         <Route
           path="/tax-certificates"
           element={
-            <ProtectedRoute allowedRoles={['LANDLORD', 'GRA_OFFICER', 'GRA_SUPERVISOR', 'ADMIN']}>
+            <ProtectedRoute allowedRoles={['LANDLORD_INDIVIDUAL', 'LANDLORD_CORPORATE', 'GRA_OFFICER', 'GRA_SUPERVISOR', 'ADMIN', 'SYSTEM_ADMIN']}>
               <TaxCertificates />
             </ProtectedRoute>
           }
@@ -197,7 +197,7 @@ function App() {
         <Route
           path="/cases"
           element={
-            <ProtectedRoute allowedRoles={['INSPECTOR', 'GRA_OFFICER', 'GRA_SUPERVISOR', 'ADMIN']}>
+            <ProtectedRoute allowedRoles={['INSPECTOR', 'GRA_OFFICER', 'GRA_SUPERVISOR', 'ADMIN', 'SYSTEM_ADMIN']}>
               <Cases />
             </ProtectedRoute>
           }
@@ -205,7 +205,7 @@ function App() {
         <Route
           path="/cases/:id"
           element={
-            <ProtectedRoute allowedRoles={['INSPECTOR', 'GRA_OFFICER', 'GRA_SUPERVISOR', 'ADMIN']}>
+            <ProtectedRoute allowedRoles={['INSPECTOR', 'GRA_OFFICER', 'GRA_SUPERVISOR', 'ADMIN', 'SYSTEM_ADMIN']}>
               <CaseDetails />
             </ProtectedRoute>
           }
