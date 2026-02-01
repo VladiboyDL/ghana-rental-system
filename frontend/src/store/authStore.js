@@ -72,6 +72,11 @@ const useAuthStore = create((set, get) => ({
     set({ user: null, token: null });
   },
 
+  setUser: (user) => {
+    localStorage.setItem('user', JSON.stringify(user));
+    set({ user });
+  },
+
   refreshUser: async () => {
     try {
       const response = await userAPI.getProfile();

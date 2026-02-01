@@ -47,7 +47,11 @@ const Settings = () => {
     setLoading(true);
     try {
       const response = await userAPI.updateProfile(profileData);
-      setUser({ ...user, ...response.data.data });
+      // The response contains the updated user data
+      const updatedUser = response.data.data?.user || response.data.data;
+      if (updatedUser) {
+        setUser({ ...user, ...updatedUser });
+      }
       toast.success('Profile updated successfully');
     } catch (error) {
       toast.error('Failed to update profile');
