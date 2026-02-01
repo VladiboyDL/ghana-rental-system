@@ -13,19 +13,27 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('Login form submitted', { email, password: '***' });
 
     if (!email || !password) {
       toast.error('Please enter email and password');
       return;
     }
 
-    const result = await login(email, password);
+    try {
+      console.log('Calling login...');
+      const result = await login(email, password);
+      console.log('Login result:', result);
 
-    if (result.success) {
-      toast.success('Login successful!');
-      navigate('/dashboard');
-    } else {
-      toast.error(result.error);
+      if (result.success) {
+        toast.success('Login successful!');
+        navigate('/dashboard');
+      } else {
+        toast.error(result.error || 'Login failed');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error('An error occurred during login');
     }
   };
 
