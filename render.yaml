@@ -53,5 +53,5 @@ databases:
   - name: ghana-rental-db
     databaseName: ghana_rental
     region: frankfurt
-    plan: starter
+    plan: free
     postgresMajorVersion: 15
