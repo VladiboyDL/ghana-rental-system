@@ -13,7 +13,6 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login form submitted', { email, password: '***' });
 
     if (!email || !password) {
       toast.error('Please enter email and password');
@@ -21,9 +20,7 @@ const Login = () => {
     }
 
     try {
-      console.log('Calling login...');
       const result = await login(email, password);
-      console.log('Login result:', result);
 
       if (result.success) {
         toast.success('Login successful!');
