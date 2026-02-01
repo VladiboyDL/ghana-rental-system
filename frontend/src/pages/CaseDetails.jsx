@@ -18,7 +18,12 @@ const CaseDetails = () => {
   const [outcome, setOutcome] = useState('');
   const [outcomeNotes, setOutcomeNotes] = useState('');
   const [penaltyAmount, setPenaltyAmount] = useState('');
-  const { user, isInspector, isGRAOfficer } = useAuthStore();
+  const { user } = useAuthStore();
+
+  // Role checks
+  const userRole = user?.role || '';
+  const isInspectorRole = userRole === 'INSPECTOR';
+  const isGRAorAdmin = ['GRA_OFFICER', 'GRA_SUPERVISOR', 'ADMIN', 'SYSTEM_ADMIN'].includes(userRole);
 
   useEffect(() => {
     loadCase();
@@ -29,7 +34,8 @@ const CaseDetails = () => {
       const response = await caseAPI.getById(id);
       setCaseData(response.data.data);
     } catch (error) {
-      toast.error('Failed to load case');
+      console.error('Failed to load case:', error);
+      toast.error('Failed to load case details');
       navigate('/cases');
     } finally {
       setLoading(false);
@@ -42,7 +48,7 @@ const CaseDetails = () => {
 
     setUpdating(true);
     try {
-      await caseAPI.scheduleInspection(id, { scheduledDate: date });
+      await caseAPI.schedule(id, { scheduledDate: date });
       toast.success('Inspection scheduled');
       loadCase();
     } catch (error) {
@@ -80,7 +86,7 @@ const CaseDetails = () => {
 
     setUpdating(true);
     try {
-      await caseAPI.closeCase(id);
+      await caseAPI.close(id, {});
       toast.success('Case closed');
       loadCase();
     } catch (error) {
@@ -103,6 +109,7 @@ const CaseDetails = () => {
   };
 
   const formatDate = (date) => {
+    if (!date) return 'N/A';
     return new Date(date).toLocaleDateString('en-GH', {
       year: 'numeric',
       month: 'long',
@@ -123,26 +130,34 @@ const CaseDetails = () => {
   }
 
   if (!caseData) {
-    return null;
+    return (
+      <div className="card text-center py-12">
+        <AlertTriangle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+        <h3 className="text-lg font-medium text-gray-600">Case not found</h3>
+        <Link to="/cases" className="btn btn-primary mt-4">
+          Back to Cases
+        </Link>
+      </div>
+    );
   }
 
   const statusInfo = getStatusBadge(caseData.status);
   const StatusIcon = statusInfo.icon;
-  const canInspect = isInspector() && caseData.assignedInspectorId === user?.id;
-  const canReview = isGRAOfficer() && caseData.status === 'PENDING_REVIEW';
+  const canInspect = isInspectorRole && caseData.inspector?.id === user?.id;
+  const canReview = isGRAorAdmin && caseData.status === 'PENDING_REVIEW';
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-4">
-          <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-lg">
+          <button onClick={() => navigate('/cases')} className="p-2 hover:bg-gray-100 rounded-lg">
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
             <h1 className="text-2xl font-bold">{caseData.caseNumber}</h1>
             <div className="flex items-center space-x-2 mt-1">
               <span className={`badge ${statusInfo.class}`}>
-                {caseData.status.replace(/_/g, ' ')}
+                {caseData.status?.replace(/_/g, ' ')}
               </span>
               <span className={`px-2 py-1 text-xs rounded-full ${
                 caseData.priority === 'HIGH' ? 'bg-red-100 text-red-700' :
@@ -174,7 +189,7 @@ const CaseDetails = () => {
               </div>
               <div>
                 <p className="text-sm text-gray-500">Description</p>
-                <p className="text-gray-700">{caseData.description}</p>
+                <p className="text-gray-700">{caseData.description || 'No description provided'}</p>
               </div>
               {caseData.allegations && caseData.allegations.length > 0 && (
                 <div>
@@ -197,7 +212,7 @@ const CaseDetails = () => {
                     caseData.riskScore > 70 ? 'text-red-600' :
                     caseData.riskScore > 40 ? 'text-yellow-600' : 'text-green-600'
                   }`}>
-                    {caseData.riskScore}/100
+                    {caseData.riskScore || 0}/100
                   </p>
                 </div>
               </div>
@@ -214,16 +229,30 @@ const CaseDetails = () => {
               <Link to={`/properties/${caseData.property.id}`} className="block hover:bg-gray-50 -m-4 p-4 rounded-xl">
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="font-bold">{caseData.property.propertyTypeName}</p>
+                    <p className="font-bold">{caseData.property.propertyCode}</p>
                     <p className="text-gray-500">{caseData.property.digitalAddress}</p>
                     <div className="flex items-center text-sm text-gray-400 mt-1">
                       <MapPin className="w-4 h-4 mr-1" />
                       <span>{caseData.property.neighborhood}, {caseData.property.district}</span>
                     </div>
                   </div>
-                  <span className="text-ghana-green">View &rarr;</span>
+                  <span className="text-ghana-green">View →</span>
                 </div>
               </Link>
+            </div>
+          )}
+
+          {/* Landlord Info */}
+          {caseData.landlord && (
+            <div className="card">
+              <h2 className="text-lg font-bold mb-4 flex items-center">
+                <User className="w-5 h-5 mr-2" />
+                Landlord Information
+              </h2>
+              <div className="space-y-2">
+                <p className="font-medium">{caseData.landlord.name}</p>
+                <p className="text-sm text-gray-500">{caseData.landlord.phone}</p>
+              </div>
             </div>
           )}
 
@@ -366,20 +395,22 @@ const CaseDetails = () => {
           {/* Status */}
           <div className="card">
             <h2 className="text-lg font-bold mb-4">Status</h2>
-            <div className={`flex items-center space-x-2 p-4 rounded-lg bg-${statusInfo.color}-50`}>
-              <StatusIcon className={`w-6 h-6 text-${statusInfo.color}-600`} />
-              <span className="font-medium">{caseData.status.replace(/_/g, ' ')}</span>
+            <div className="flex items-center space-x-2 p-4 rounded-lg bg-gray-50">
+              <StatusIcon className="w-6 h-6 text-gray-600" />
+              <span className="font-medium">{caseData.status?.replace(/_/g, ' ')}</span>
             </div>
           </div>
 
           {/* Assignment */}
           <div className="card">
             <h2 className="text-lg font-bold mb-4">Assignment</h2>
-            {caseData.assignedInspector ? (
+            {caseData.inspector ? (
               <div className="space-y-2">
                 <p className="text-sm text-gray-500">Assigned Inspector</p>
-                <p className="font-medium">{caseData.assignedInspector.name}</p>
-                <p className="text-sm text-gray-500">{caseData.assignedInspector.phone}</p>
+                <p className="font-medium">{caseData.inspector.name}</p>
+                {caseData.inspector.phone && (
+                  <p className="text-sm text-gray-500">{caseData.inspector.phone}</p>
+                )}
                 {caseData.assignedAt && (
                   <p className="text-xs text-gray-400">
                     Assigned on {formatDate(caseData.assignedAt)}
@@ -414,6 +445,22 @@ const CaseDetails = () => {
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* Related Contracts */}
+          {caseData.contracts && caseData.contracts.length > 0 && (
+            <div className="card">
+              <h2 className="text-lg font-bold mb-4">Related Contracts</h2>
+              <div className="space-y-2">
+                {caseData.contracts.map((contract, index) => (
+                  <div key={index} className="p-3 bg-gray-50 rounded-lg text-sm">
+                    <p className="font-medium">{contract.contract_number}</p>
+                    <p className="text-gray-500">GHS {contract.monthly_rent?.toLocaleString()}/mo</p>
+                    <p className="text-xs text-gray-400">{contract.status}</p>
+                  </div>
+                ))}
               </div>
             </div>
           )}

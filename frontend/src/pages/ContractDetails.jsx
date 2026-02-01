@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   ArrowLeft, FileText, Building, User, Calendar, DollarSign,
-  CheckCircle, XCircle, AlertCircle, Clock, Download
+  CheckCircle, XCircle, AlertCircle, Clock, Download, Printer, Eye
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { contractAPI, paymentAPI } from '../services/api';
@@ -15,6 +15,8 @@ const ContractDetails = () => {
   const [loading, setLoading] = useState(true);
   const [confirmCode, setConfirmCode] = useState('');
   const [confirming, setConfirming] = useState(false);
+  const [showPdfView, setShowPdfView] = useState(false);
+  const pdfRef = useRef(null);
   const { user, isTenant, isLandlord } = useAuthStore();
 
   useEffect(() => {
@@ -87,6 +89,214 @@ const ContractDetails = () => {
     return `GHS ${amount?.toLocaleString() || 0}`;
   };
 
+  const handlePrint = () => {
+    if (pdfRef.current) {
+      const printContent = pdfRef.current.innerHTML;
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Contract ${contract?.contractNumber}</title>
+            <style>
+              body { font-family: 'Times New Roman', serif; padding: 40px; max-width: 800px; margin: 0 auto; }
+              .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #006B3F; padding-bottom: 20px; }
+              .logo { font-size: 24px; font-weight: bold; color: #006B3F; }
+              .contract-title { font-size: 20px; margin-top: 10px; }
+              .contract-number { font-size: 14px; color: #666; }
+              .section { margin: 25px 0; }
+              .section-title { font-size: 16px; font-weight: bold; margin-bottom: 15px; color: #006B3F; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+              .party-box { background: #f9f9f9; padding: 15px; margin: 10px 0; border-left: 3px solid #006B3F; }
+              .party-label { font-weight: bold; color: #333; }
+              .party-name { font-size: 18px; margin: 5px 0; }
+              .party-detail { color: #666; font-size: 14px; }
+              .terms-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+              .term-item { padding: 10px; background: #f5f5f5; }
+              .term-label { font-size: 12px; color: #666; }
+              .term-value { font-size: 16px; font-weight: bold; }
+              .financial-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+              .financial-table th, .financial-table td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+              .financial-table th { background: #f5f5f5; font-weight: bold; }
+              .total-row { background: #006B3F; color: white; font-weight: bold; }
+              .signature-section { margin-top: 50px; display: grid; grid-template-columns: 1fr 1fr; gap: 50px; }
+              .signature-box { text-align: center; }
+              .signature-line { border-top: 1px solid #333; padding-top: 10px; margin-top: 60px; }
+              .signature-name { font-weight: bold; }
+              .signature-date { font-size: 12px; color: #666; margin-top: 5px; }
+              .signature-status { display: inline-block; padding: 5px 15px; border-radius: 20px; font-size: 12px; margin-top: 10px; }
+              .signed { background: #e6f4ea; color: #137333; }
+              .pending { background: #fff3e0; color: #e65100; }
+              .footer { margin-top: 50px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #ddd; padding-top: 20px; }
+              @media print { body { padding: 20px; } }
+            </style>
+          </head>
+          <body>${printContent}</body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.print();
+    }
+  };
+
+  // Contract PDF View Component
+  const ContractPdfView = () => (
+    <div ref={pdfRef} className="bg-white">
+      {/* Header */}
+      <div className="header">
+        <div className="logo">GHANA REVENUE AUTHORITY</div>
+        <div className="contract-title">RENTAL AGREEMENT CONTRACT</div>
+        <div className="contract-number">Contract No: {contract.contractNumber}</div>
+      </div>
+
+      {/* Parties Section */}
+      <div className="section">
+        <div className="section-title">CONTRACTING PARTIES</div>
+        <div className="party-box">
+          <div className="party-label">LANDLORD (First Party)</div>
+          <div className="party-name">{contract.landlord?.name || 'N/A'}</div>
+          <div className="party-detail">Phone: {contract.landlord?.phone || 'N/A'}</div>
+          <div className="party-detail">Email: {contract.landlord?.email || 'N/A'}</div>
+          <div className="party-detail">TIN: {contract.landlord?.tin || 'N/A'}</div>
+        </div>
+        <div className="party-box">
+          <div className="party-label">TENANT (Second Party)</div>
+          <div className="party-name">{contract.tenant?.name || 'N/A'}</div>
+          <div className="party-detail">Phone: {contract.tenant?.phone || 'N/A'}</div>
+          <div className="party-detail">Email: {contract.tenant?.email || 'N/A'}</div>
+          <div className="party-detail">Ghana Card: {contract.tenant?.ghanaCardNumber || 'N/A'}</div>
+        </div>
+      </div>
+
+      {/* Property Section */}
+      <div className="section">
+        <div className="section-title">PROPERTY DETAILS</div>
+        <div className="terms-grid">
+          <div className="term-item">
+            <div className="term-label">Property Type</div>
+            <div className="term-value">{contract.property?.propertyTypeName || 'N/A'}</div>
+          </div>
+          <div className="term-item">
+            <div className="term-label">Digital Address</div>
+            <div className="term-value">{contract.property?.digitalAddress || 'N/A'}</div>
+          </div>
+          <div className="term-item">
+            <div className="term-label">Location</div>
+            <div className="term-value">{contract.property?.neighborhood}, {contract.property?.district}</div>
+          </div>
+          <div className="term-item">
+            <div className="term-label">Property Code</div>
+            <div className="term-value">{contract.property?.propertyCode || 'N/A'}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Contract Terms */}
+      <div className="section">
+        <div className="section-title">CONTRACT TERMS</div>
+        <div className="terms-grid">
+          <div className="term-item">
+            <div className="term-label">Contract Type</div>
+            <div className="term-value">{contract.contractType}</div>
+          </div>
+          <div className="term-item">
+            <div className="term-label">Payment Frequency</div>
+            <div className="term-value">{contract.paymentFrequency}</div>
+          </div>
+          <div className="term-item">
+            <div className="term-label">Commencement Date</div>
+            <div className="term-value">{formatDate(contract.startDate)}</div>
+          </div>
+          <div className="term-item">
+            <div className="term-label">Expiry Date</div>
+            <div className="term-value">{formatDate(contract.endDate)}</div>
+          </div>
+          <div className="term-item">
+            <div className="term-label">Duration</div>
+            <div className="term-value">
+              {Math.ceil((new Date(contract.endDate) - new Date(contract.startDate)) / (1000 * 60 * 60 * 24 * 30))} months
+            </div>
+          </div>
+          <div className="term-item">
+            <div className="term-label">Advance Payment</div>
+            <div className="term-value">{contract.advanceMonths} months</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Financial Terms */}
+      <div className="section">
+        <div className="section-title">FINANCIAL TERMS</div>
+        <table className="financial-table">
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th style={{ textAlign: 'right' }}>Amount (GHS)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Monthly Rent</td>
+              <td style={{ textAlign: 'right' }}>{formatCurrency(contract.monthlyRent)}</td>
+            </tr>
+            <tr>
+              <td>Security Deposit</td>
+              <td style={{ textAlign: 'right' }}>{formatCurrency(contract.securityDeposit)}</td>
+            </tr>
+            <tr>
+              <td>Service Charge (Monthly)</td>
+              <td style={{ textAlign: 'right' }}>{formatCurrency(contract.serviceCharge)}</td>
+            </tr>
+            <tr>
+              <td>Withholding Tax Rate</td>
+              <td style={{ textAlign: 'right' }}>{(contract.taxRate * 100).toFixed(0)}%</td>
+            </tr>
+            <tr className="total-row">
+              <td>Total Tax to be Withheld</td>
+              <td style={{ textAlign: 'right' }}>{formatCurrency(contract.totalTaxWithheld)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      {/* Signatures Section */}
+      <div className="section">
+        <div className="section-title">SIGNATURES</div>
+        <div className="signature-section">
+          <div className="signature-box">
+            <div className="signature-line">
+              <div className="signature-name">{contract.landlord?.name || 'Landlord Name'}</div>
+              <div className="signature-date">
+                {contract.landlordSignedAt ? `Signed: ${formatDate(contract.landlordSignedAt)}` : 'Not yet signed'}
+              </div>
+              <span className={`signature-status ${contract.landlordSigned ? 'signed' : 'pending'}`}>
+                {contract.landlordSigned ? '✓ SIGNED' : '○ PENDING'}
+              </span>
+            </div>
+            <div style={{ marginTop: '10px', fontSize: '12px', color: '#666' }}>LANDLORD</div>
+          </div>
+          <div className="signature-box">
+            <div className="signature-line">
+              <div className="signature-name">{contract.tenant?.name || 'Tenant Name'}</div>
+              <div className="signature-date">
+                {contract.tenantConfirmedAt ? `Confirmed: ${formatDate(contract.tenantConfirmedAt)}` : 'Not yet confirmed'}
+              </div>
+              <span className={`signature-status ${contract.tenantConfirmed ? 'signed' : 'pending'}`}>
+                {contract.tenantConfirmed ? '✓ CONFIRMED' : '○ PENDING'}
+              </span>
+            </div>
+            <div style={{ marginTop: '10px', fontSize: '12px', color: '#666' }}>TENANT</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="footer">
+        <p>This contract is registered with the Ghana Revenue Authority under the Rental Income Tax Act.</p>
+        <p>Generated on {new Date().toLocaleDateString('en-GH', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+        <p style={{ marginTop: '10px', fontWeight: 'bold' }}>Contract Status: {contract.status.replace(/_/g, ' ')}</p>
+      </div>
+    </div>
+  );
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -118,14 +328,23 @@ const ContractDetails = () => {
             </div>
           </div>
         </div>
-        {contract.status === 'ACTIVE' && (
+        <div className="flex items-center space-x-2">
           <button
-            onClick={handleTerminate}
-            className="btn btn-danger"
+            onClick={() => setShowPdfView(true)}
+            className="btn btn-secondary flex items-center space-x-2"
           >
-            Terminate Contract
+            <Eye className="w-4 h-4" />
+            <span>View Contract PDF</span>
           </button>
-        )}
+          {contract.status === 'ACTIVE' && (
+            <button
+              onClick={handleTerminate}
+              className="btn btn-danger"
+            >
+              Terminate Contract
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Confirmation Alert for Tenant */}
@@ -379,6 +598,43 @@ const ContractDetails = () => {
           </div>
         </div>
       </div>
+
+      {/* PDF View Modal */}
+      {showPdfView && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 border-b bg-gray-50">
+              <h3 className="text-lg font-bold flex items-center">
+                <FileText className="w-5 h-5 mr-2" />
+                Contract Document
+              </h3>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={handlePrint}
+                  className="btn btn-secondary flex items-center space-x-2"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Print</span>
+                </button>
+                <button
+                  onClick={() => setShowPdfView(false)}
+                  className="p-2 hover:bg-gray-200 rounded-lg"
+                >
+                  <XCircle className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <div className="overflow-auto p-8 flex-1" style={{ background: '#f5f5f5' }}>
+              <div className="bg-white shadow-lg max-w-3xl mx-auto p-8" style={{ fontFamily: "'Times New Roman', serif" }}>
+                <ContractPdfView />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

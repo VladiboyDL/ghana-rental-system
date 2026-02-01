@@ -19,6 +19,7 @@ import TaxCertificates from './pages/TaxCertificates';
 import MarketRent from './pages/MarketRent';
 import Cases from './pages/Cases';
 import CaseDetails from './pages/CaseDetails';
+import Reports from './pages/Reports';
 import USSDSimulator from './pages/USSDSimulator';
 import Settings from './pages/Settings';
 import VerifyCertificate from './pages/VerifyCertificate';
@@ -207,6 +208,16 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['INSPECTOR', 'GRA_OFFICER', 'GRA_SUPERVISOR', 'ADMIN', 'SYSTEM_ADMIN']}>
               <CaseDetails />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Reports (GRA/Admin only) */}
+        <Route
+          path="/reports"
+          element={
+            <ProtectedRoute allowedRoles={['GRA_OFFICER', 'GRA_SUPERVISOR', 'ADMIN', 'SYSTEM_ADMIN']}>
+              <Reports />
             </ProtectedRoute>
           }
         />

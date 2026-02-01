@@ -1,13 +1,19 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Building, MapPin, Bed, Bath, Check, Clock, Search } from 'lucide-react';
+import { Plus, Building, MapPin, Bed, Bath, Check, Clock, Search, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { propertyAPI } from '../services/api';
+import useAuthStore from '../store/authStore';
 
 const Properties = () => {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState({ status: '', search: '' });
+  const { user } = useAuthStore();
+
+  // Check if user is a landlord (only landlords can add properties)
+  const isLandlord = ['LANDLORD_INDIVIDUAL', 'LANDLORD_CORPORATE'].includes(user?.role);
+  const isGRAorAdmin = ['GRA_OFFICER', 'GRA_SUPERVISOR', 'ADMIN', 'SYSTEM_ADMIN', 'INSPECTOR'].includes(user?.role);
 
   useEffect(() => {
     loadProperties();
@@ -16,7 +22,7 @@ const Properties = () => {
   const loadProperties = async () => {
     try {
       const response = await propertyAPI.getAll({ status: filter.status || undefined });
-      setProperties(response.data.data);
+      setProperties(response.data.data || []);
     } catch (error) {
       toast.error('Failed to load properties');
     } finally {
@@ -36,7 +42,8 @@ const Properties = () => {
   const filteredProperties = properties.filter(p =>
     p.propertyCode?.toLowerCase().includes(filter.search.toLowerCase()) ||
     p.neighborhood?.toLowerCase().includes(filter.search.toLowerCase()) ||
-    p.district?.toLowerCase().includes(filter.search.toLowerCase())
+    p.district?.toLowerCase().includes(filter.search.toLowerCase()) ||
+    p.landlord?.name?.toLowerCase().includes(filter.search.toLowerCase())
   );
 
   if (loading) {
@@ -50,11 +57,15 @@ const Properties = () => {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">My Properties</h1>
-        <Link to="/properties/new" className="btn btn-primary flex items-center space-x-2">
-          <Plus className="w-4 h-4" />
-          <span>Add Property</span>
-        </Link>
+        <h1 className="text-2xl font-bold">
+          {isLandlord ? 'My Properties' : 'Registered Properties'}
+        </h1>
+        {isLandlord && (
+          <Link to="/properties/new" className="btn btn-primary flex items-center space-x-2">
+            <Plus className="w-4 h-4" />
+            <span>Add Property</span>
+          </Link>
+        )}
       </div>
 
       {/* Filters */}
@@ -64,7 +75,7 @@ const Properties = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Search properties..."
+              placeholder={isGRAorAdmin ? "Search by code, location, or landlord..." : "Search properties..."}
               className="input pl-10"
               value={filter.search}
               onChange={(e) => setFilter({ ...filter, search: e.target.value })}
@@ -77,7 +88,7 @@ const Properties = () => {
           >
             <option value="">All Status</option>
             <option value="VERIFIED">Verified</option>
-            <option value="PENDING_VERIFICATION">Pending</option>
+            <option value="PENDING_VERIFICATION">Pending Verification</option>
           </select>
         </div>
       </div>
@@ -87,11 +98,15 @@ const Properties = () => {
         <div className="card text-center py-12">
           <Building className="w-12 h-12 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-600">No properties found</h3>
-          <p className="text-gray-400 mt-1">Add your first property to get started</p>
-          <Link to="/properties/new" className="btn btn-primary mt-4 inline-flex items-center space-x-2">
-            <Plus className="w-4 h-4" />
-            <span>Add Property</span>
-          </Link>
+          <p className="text-gray-400 mt-1">
+            {isLandlord ? 'Add your first property to get started' : 'No properties match your search criteria'}
+          </p>
+          {isLandlord && (
+            <Link to="/properties/new" className="btn btn-primary mt-4 inline-flex items-center space-x-2">
+              <Plus className="w-4 h-4" />
+              <span>Add Property</span>
+            </Link>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -130,6 +145,14 @@ const Properties = () => {
                 <MapPin className="w-4 h-4 mr-1" />
                 {property.neighborhood}, {property.district}
               </div>
+
+              {/* Show landlord info for GRA/Admin users */}
+              {isGRAorAdmin && property.landlord && (
+                <div className="flex items-center text-sm text-gray-600 mb-3">
+                  <User className="w-4 h-4 mr-1" />
+                  <span className="font-medium">{property.landlord.name}</span>
+                </div>
+              )}
 
               {property.bedrooms && (
                 <div className="flex items-center space-x-4 text-sm text-gray-600">
