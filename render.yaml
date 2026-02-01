@@ -35,7 +35,6 @@ services:
   - type: web
     name: ghana-rental-dashboard
     env: static
-    region: frankfurt
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: frontend/dist
     envVars:
