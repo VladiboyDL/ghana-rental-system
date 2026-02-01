@@ -1,4 +1,4 @@
-import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   Home, Building, FileText, CreditCard, Shield, Users,
   BarChart3, Settings, LogOut, Menu, X, Bell, Phone
@@ -6,9 +6,9 @@ import {
 import { useState } from 'react';
 import useAuthStore from '../store/authStore';
 
-const Layout = () => {
+const Layout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { user, logout, isLandlord, isTenant, isAdmin, isGRA, isInspector } = useAuthStore();
+  const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -17,41 +17,34 @@ const Layout = () => {
     navigate('/login');
   };
 
+  // Check roles directly from user object
+  const userRole = user?.role || '';
+  const isGRA = ['GRA_OFFICER', 'GRA_SUPERVISOR'].includes(userRole);
+  const isAdmin = ['ADMIN', 'SYSTEM_ADMIN'].includes(userRole);
+  const isInspector = userRole === 'INSPECTOR';
+
   const getNavItems = () => {
     const items = [
       { to: '/dashboard', icon: Home, label: 'Dashboard' }
     ];
 
-    if (isLandlord()) {
+    // GRA Officers, Supervisors, and Admins see full menu
+    if (isGRA || isAdmin) {
       items.push(
-        { to: '/properties', icon: Building, label: 'My Properties' },
+        { to: '/properties', icon: Building, label: 'Properties' },
         { to: '/contracts', icon: FileText, label: 'Contracts' },
         { to: '/payments', icon: CreditCard, label: 'Payments' },
-        { to: '/tax-certificates', icon: Shield, label: 'Tax Certificates' }
-      );
-    }
-
-    if (isTenant()) {
-      items.push(
-        { to: '/contracts', icon: FileText, label: 'My Contracts' },
-        { to: '/payments', icon: CreditCard, label: 'Payments' },
-        { to: '/market', icon: BarChart3, label: 'Market Rent' }
-      );
-    }
-
-    if (isGRA() || isAdmin()) {
-      items.push(
-        { to: '/landlords', icon: Users, label: 'Landlords' },
-        { to: '/contracts', icon: FileText, label: 'Contracts' },
-        { to: '/payments', icon: CreditCard, label: 'Payments' },
+        { to: '/tax-certificates', icon: Shield, label: 'Tax Certificates' },
         { to: '/cases', icon: Shield, label: 'Cases' },
         { to: '/reports', icon: BarChart3, label: 'Reports' }
       );
     }
 
-    if (isInspector()) {
+    // Inspectors see their cases
+    if (isInspector) {
       items.push(
-        { to: '/cases', icon: Shield, label: 'My Cases' }
+        { to: '/cases', icon: Shield, label: 'My Cases' },
+        { to: '/properties', icon: Building, label: 'Properties' }
       );
     }
 
@@ -169,7 +162,7 @@ const Layout = () => {
 
         {/* Page content */}
         <main className="p-4 lg:p-6">
-          <Outlet />
+          {children}
         </main>
       </div>
     </div>

@@ -25,7 +25,8 @@ import VerifyCertificate from './pages/VerifyCertificate';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
-  const { isAuthenticated, user } = useAuthStore();
+  const { token, user } = useAuthStore();
+  const isAuthenticated = !!token && !!user;
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
@@ -40,7 +41,8 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
 
 // Public Route Component (redirect to dashboard if authenticated)
 const PublicRoute = ({ children }) => {
-  const { isAuthenticated } = useAuthStore();
+  const { token, user } = useAuthStore();
+  const isAuthenticated = !!token && !!user;
 
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
