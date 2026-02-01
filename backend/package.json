@@ -11,6 +11,7 @@
     "dev": "nodemon src/app.js",
     "migrate": "node database/migrate-postgres.js",
     "seed": "node database/seeds/seed-postgres.js",
+    "fix-types": "node database/migrations/fix-property-types.js",
     "db:reset": "npm run migrate && npm run seed",
     "test": "jest"
   },
