@@ -1,11 +1,11 @@
 const jwt = require('jsonwebtoken');
-const db = require('../config/database');
+const { db } = require('../config/database');
 require('dotenv').config();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'ghana-rental-demo-secret-key-2024';
 
 // Authentication middleware
-const authenticate = (req, res, next) => {
+const authenticate = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
@@ -23,9 +23,9 @@ const authenticate = (req, res, next) => {
     const decoded = jwt.verify(token, JWT_SECRET);
 
     // Get user from database
-    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(decoded.userId);
+    const result = await db.query('SELECT * FROM users WHERE id = $1', [decoded.userId]);
 
-    if (!user) {
+    if (result.rows.length === 0) {
       return res.status(401).json({
         success: false,
         error: {
@@ -34,6 +34,8 @@ const authenticate = (req, res, next) => {
         }
       });
     }
+
+    const user = result.rows[0];
 
     if (user.status === 'SUSPENDED' || user.status === 'BLACKLISTED') {
       return res.status(403).json({
@@ -96,7 +98,7 @@ const authorize = (...roles) => {
 };
 
 // Optional authentication (doesn't fail if no token)
-const optionalAuth = (req, res, next) => {
+const optionalAuth = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
@@ -107,10 +109,13 @@ const optionalAuth = (req, res, next) => {
     const token = authHeader.split(' ')[1];
     const decoded = jwt.verify(token, JWT_SECRET);
 
-    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(decoded.userId);
+    const result = await db.query('SELECT * FROM users WHERE id = $1', [decoded.userId]);
 
-    if (user && user.status !== 'SUSPENDED' && user.status !== 'BLACKLISTED') {
-      req.user = user;
+    if (result.rows.length > 0) {
+      const user = result.rows[0];
+      if (user.status !== 'SUSPENDED' && user.status !== 'BLACKLISTED') {
+        req.user = user;
+      }
     }
 
     next();

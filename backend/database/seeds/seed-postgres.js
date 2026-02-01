@@ -16,29 +16,29 @@ async function seed() {
     const passwordHash = await bcrypt.hash('demo123', 10);
     const adminPasswordHash = await bcrypt.hash('admin123', 10);
 
-    // Demo Users
+    // Demo Users - using .com emails to match frontend
     const usersResult = await client.query(`
       INSERT INTO users (email, phone, password_hash, role, first_name, last_name, ghana_card_number, tin_number, digital_address, region, district, city, status, verification_status)
       VALUES
-        ('kwame@demo.gh', '+233241000001', $1, 'LANDLORD', 'Kwame', 'Asante', 'GHA-123456789-0', 'P0012345678', 'GA-123-4567', 'Greater Accra', 'Accra Metropolitan', 'Accra', 'ACTIVE', 'VERIFIED'),
-        ('ama@demo.gh', '+233241000002', $1, 'TENANT', 'Ama', 'Mensah', 'GHA-987654321-0', NULL, 'GA-234-5678', 'Greater Accra', 'Tema Metropolitan', 'Tema', 'ACTIVE', 'VERIFIED'),
-        ('yaw@demo.gh', '+233241000003', $1, 'LANDLORD', 'Yaw', 'Boateng', 'GHA-456789123-0', 'P0023456789', 'AS-456-7890', 'Ashanti', 'Kumasi Metropolitan', 'Kumasi', 'ACTIVE', 'VERIFIED'),
-        ('kofi@demo.gh', '+233241000004', $1, 'TENANT', 'Kofi', 'Owusu', 'GHA-789123456-0', NULL, 'AS-567-8901', 'Ashanti', 'Kumasi Metropolitan', 'Kumasi', 'ACTIVE', 'VERIFIED'),
-        ('gra@demo.gh', '+233241000005', $1, 'GRA_OFFICER', 'Grace', 'Addo', 'GHA-111222333-0', NULL, 'GA-678-9012', 'Greater Accra', 'Accra Metropolitan', 'Accra', 'ACTIVE', 'VERIFIED'),
-        ('inspector@demo.gh', '+233241000006', $1, 'INSPECTOR', 'Isaac', 'Nkrumah', 'GHA-444555666-0', NULL, 'GA-789-0123', 'Greater Accra', 'Accra Metropolitan', 'Accra', 'ACTIVE', 'VERIFIED'),
-        ('supervisor@demo.gh', '+233241000007', $1, 'GRA_SUPERVISOR', 'Sarah', 'Danso', 'GHA-777888999-0', NULL, 'GA-890-1234', 'Greater Accra', 'Accra Metropolitan', 'Accra', 'ACTIVE', 'VERIFIED'),
-        ('admin@demo.gh', '+233241000008', $2, 'ADMIN', 'Admin', 'User', 'GHA-000000001-0', NULL, 'GA-000-0001', 'Greater Accra', 'Accra Metropolitan', 'Accra', 'ACTIVE', 'VERIFIED')
+        ('landlord@demo.com', '+233241000001', $1, 'LANDLORD_INDIVIDUAL', 'Kwame', 'Asante', 'GHA-123456789-0', 'P0012345678', 'GA-123-4567', 'Greater Accra', 'Accra Metropolitan', 'Accra', 'ACTIVE', 'VERIFIED'),
+        ('tenant@demo.com', '+233241000002', $1, 'TENANT_INDIVIDUAL', 'Ama', 'Mensah', 'GHA-987654321-0', NULL, 'GA-234-5678', 'Greater Accra', 'Tema Metropolitan', 'Tema', 'ACTIVE', 'VERIFIED'),
+        ('landlord2@demo.com', '+233241000003', $1, 'LANDLORD_INDIVIDUAL', 'Yaw', 'Boateng', 'GHA-456789123-0', 'P0023456789', 'AS-456-7890', 'Ashanti', 'Kumasi Metropolitan', 'Kumasi', 'ACTIVE', 'VERIFIED'),
+        ('tenant2@demo.com', '+233241000004', $1, 'TENANT_INDIVIDUAL', 'Kofi', 'Owusu', 'GHA-789123456-0', NULL, 'AS-567-8901', 'Ashanti', 'Kumasi Metropolitan', 'Kumasi', 'ACTIVE', 'VERIFIED'),
+        ('gra@demo.com', '+233241000005', $1, 'GRA_OFFICER', 'Grace', 'Addo', 'GHA-111222333-0', NULL, 'GA-678-9012', 'Greater Accra', 'Accra Metropolitan', 'Accra', 'ACTIVE', 'VERIFIED'),
+        ('inspector@demo.com', '+233241000006', $1, 'INSPECTOR', 'Isaac', 'Nkrumah', 'GHA-444555666-0', NULL, 'GA-789-0123', 'Greater Accra', 'Accra Metropolitan', 'Accra', 'ACTIVE', 'VERIFIED'),
+        ('supervisor@demo.com', '+233241000007', $1, 'GRA_SUPERVISOR', 'Sarah', 'Danso', 'GHA-777888999-0', NULL, 'GA-890-1234', 'Greater Accra', 'Accra Metropolitan', 'Accra', 'ACTIVE', 'VERIFIED'),
+        ('admin@demo.com', '+233241000008', $2, 'SYSTEM_ADMIN', 'Admin', 'User', 'GHA-000000001-0', NULL, 'GA-000-0001', 'Greater Accra', 'Accra Metropolitan', 'Accra', 'ACTIVE', 'VERIFIED')
       RETURNING id, email, role
     `, [passwordHash, adminPasswordHash]);
 
     console.log('Users seeded:', usersResult.rows.length);
 
     const users = usersResult.rows;
-    const landlord1 = users.find(u => u.email === 'kwame@demo.gh');
-    const landlord2 = users.find(u => u.email === 'yaw@demo.gh');
-    const tenant1 = users.find(u => u.email === 'ama@demo.gh');
-    const tenant2 = users.find(u => u.email === 'kofi@demo.gh');
-    const inspector = users.find(u => u.email === 'inspector@demo.gh');
+    const landlord1 = users.find(u => u.email === 'landlord@demo.com');
+    const landlord2 = users.find(u => u.email === 'landlord2@demo.com');
+    const tenant1 = users.find(u => u.email === 'tenant@demo.com');
+    const tenant2 = users.find(u => u.email === 'tenant2@demo.com');
+    const inspector = users.find(u => u.email === 'inspector@demo.com');
 
     // Demo Properties
     const propertiesResult = await client.query(`
@@ -118,11 +118,11 @@ async function seed() {
 
     console.log('\n=== Database seeding completed! ===');
     console.log('\nDemo Credentials:');
-    console.log('Landlord: kwame@demo.gh / demo123');
-    console.log('Tenant: ama@demo.gh / demo123');
-    console.log('GRA Officer: gra@demo.gh / demo123');
-    console.log('Inspector: inspector@demo.gh / demo123');
-    console.log('Admin: admin@demo.gh / admin123');
+    console.log('Landlord: landlord@demo.com / demo123');
+    console.log('Tenant: tenant@demo.com / demo123');
+    console.log('GRA Officer: gra@demo.com / demo123');
+    console.log('Inspector: inspector@demo.com / demo123');
+    console.log('Admin: admin@demo.com / admin123');
 
   } catch (error) {
     console.error('Seeding failed:', error);

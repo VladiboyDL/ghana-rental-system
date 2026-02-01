@@ -1,5 +1,5 @@
 const bcrypt = require('bcryptjs');
-const db = require('../config/database');
+const { db } = require('../config/database');
 const { generateToken } = require('../middleware/auth');
 const { generateId, generateOTP, validateGhanaPhone, formatGhanaPhone, validateGhanaCard } = require('../utils/helpers');
 const { verifyGhanaCard } = require('../simulators/nia');
@@ -47,8 +47,12 @@ const register = async (req, res) => {
     }
 
     // Check if user exists
-    const existingUser = db.prepare('SELECT id FROM users WHERE email = ? OR phone = ?').get(email, formattedPhone);
-    if (existingUser) {
+    const existingResult = await db.query(
+      'SELECT id FROM users WHERE email = $1 OR phone = $2',
+      [email, formattedPhone]
+    );
+
+    if (existingResult.rows.length > 0) {
       return res.status(400).json({
         success: false,
         error: {
@@ -69,24 +73,17 @@ const register = async (req, res) => {
     const userId = generateId();
     const otpId = generateId();
 
-    db.prepare(`
-      INSERT INTO otp_codes (id, phone, code, purpose, expires_at)
-      VALUES (?, ?, ?, 'registration', ?)
-    `).run(otpId, formattedPhone, otp, otpExpiry);
+    await db.query(
+      `INSERT INTO otp_codes (id, phone, code, purpose, expires_at)
+       VALUES ($1, $2, $3, 'registration', $4)`,
+      [otpId, formattedPhone, otp, otpExpiry]
+    );
 
     // Store user data temporarily (pending OTP verification)
-    db.prepare(`
-      INSERT INTO users (id, email, phone, password_hash, first_name, last_name, role, status, is_corporate)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 'PENDING_VERIFICATION', ?)
-    `).run(
-      userId,
-      email,
-      formattedPhone,
-      passwordHash,
-      firstName,
-      lastName,
-      role,
-      role.includes('CORPORATE') ? 1 : 0
+    await db.query(
+      `INSERT INTO users (id, email, phone, password_hash, first_name, last_name, role, status, is_corporate)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, 'PENDING_VERIFICATION', $8)`,
+      [userId, email, formattedPhone, passwordHash, firstName, lastName, role, role.includes('CORPORATE')]
     );
 
     // Send OTP via SMS
@@ -130,13 +127,14 @@ const verifyOTP = async (req, res) => {
     const formattedPhone = formatGhanaPhone(phone);
 
     // Find OTP
-    const otpRecord = db.prepare(`
-      SELECT * FROM otp_codes
-      WHERE phone = ? AND code = ? AND used = 0 AND expires_at > datetime('now')
-      ORDER BY created_at DESC LIMIT 1
-    `).get(formattedPhone, code);
+    const otpResult = await db.query(
+      `SELECT * FROM otp_codes
+       WHERE phone = $1 AND code = $2 AND used = false AND expires_at > NOW()
+       ORDER BY created_at DESC LIMIT 1`,
+      [formattedPhone, code]
+    );
 
-    if (!otpRecord) {
+    if (otpResult.rows.length === 0) {
       return res.status(400).json({
         success: false,
         error: {
@@ -146,18 +144,20 @@ const verifyOTP = async (req, res) => {
       });
     }
 
+    const otpRecord = otpResult.rows[0];
+
     // Mark OTP as used
-    db.prepare('UPDATE otp_codes SET used = 1 WHERE id = ?').run(otpRecord.id);
+    await db.query('UPDATE otp_codes SET used = true WHERE id = $1', [otpRecord.id]);
 
     // Update user status based on purpose
     if (otpRecord.purpose === 'registration') {
-      db.prepare(`UPDATE users SET status = 'ACTIVE' WHERE phone = ?`).run(formattedPhone);
+      await db.query(`UPDATE users SET status = 'ACTIVE' WHERE phone = $1`, [formattedPhone]);
     }
 
     // Get user
-    const user = db.prepare('SELECT * FROM users WHERE phone = ?').get(formattedPhone);
+    const userResult = await db.query('SELECT * FROM users WHERE phone = $1', [formattedPhone]);
 
-    if (!user) {
+    if (userResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
         error: {
@@ -166,6 +166,8 @@ const verifyOTP = async (req, res) => {
         }
       });
     }
+
+    const user = userResult.rows[0];
 
     // Generate token
     const token = generateToken(user.id);
@@ -214,11 +216,12 @@ const login = async (req, res) => {
     }
 
     // Find user by email or phone
-    const user = db.prepare(`
-      SELECT * FROM users WHERE email = ? OR phone = ?
-    `).get(email, formatGhanaPhone(email));
+    const userResult = await db.query(
+      `SELECT * FROM users WHERE email = $1 OR phone = $2`,
+      [email, formatGhanaPhone(email)]
+    );
 
-    if (!user) {
+    if (userResult.rows.length === 0) {
       return res.status(401).json({
         success: false,
         error: {
@@ -227,6 +230,8 @@ const login = async (req, res) => {
         }
       });
     }
+
+    const user = userResult.rows[0];
 
     // Check password
     const validPassword = await bcrypt.compare(password, user.password_hash);
@@ -256,10 +261,11 @@ const login = async (req, res) => {
       const otp = generateOTP();
       const otpExpiry = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
-      db.prepare(`
-        INSERT INTO otp_codes (id, phone, code, purpose, expires_at)
-        VALUES (?, ?, ?, 'verification', ?)
-      `).run(generateId(), user.phone, otp, otpExpiry);
+      await db.query(
+        `INSERT INTO otp_codes (id, phone, code, purpose, expires_at)
+         VALUES ($1, $2, $3, 'verification', $4)`,
+        [generateId(), user.phone, otp, otpExpiry]
+      );
 
       await sendOTP(user.phone, otp, 'verification');
 
@@ -274,7 +280,7 @@ const login = async (req, res) => {
     }
 
     // Update last login
-    db.prepare(`UPDATE users SET last_login_at = datetime('now') WHERE id = ?`).run(user.id);
+    await db.query(`UPDATE users SET last_login_at = NOW() WHERE id = $1`, [user.id]);
 
     // Generate token
     const token = generateToken(user.id);
@@ -292,7 +298,7 @@ const login = async (req, res) => {
           role: user.role,
           status: user.status,
           complianceScore: user.compliance_score,
-          isCorporate: user.is_corporate === 1,
+          isCorporate: user.is_corporate,
           companyName: user.company_name
         }
       }
@@ -336,9 +342,9 @@ const forgotPassword = async (req, res) => {
     }
 
     // Find user
-    const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+    const userResult = await db.query('SELECT * FROM users WHERE email = $1', [email]);
 
-    if (!user) {
+    if (userResult.rows.length === 0) {
       // Don't reveal if user exists
       return res.json({
         success: true,
@@ -348,14 +354,17 @@ const forgotPassword = async (req, res) => {
       });
     }
 
+    const user = userResult.rows[0];
+
     // Generate OTP
     const otp = generateOTP();
     const otpExpiry = new Date(Date.now() + 15 * 60 * 1000).toISOString(); // 15 minutes
 
-    db.prepare(`
-      INSERT INTO otp_codes (id, phone, code, purpose, expires_at)
-      VALUES (?, ?, ?, 'password_reset', ?)
-    `).run(generateId(), user.phone, otp, otpExpiry);
+    await db.query(
+      `INSERT INTO otp_codes (id, phone, code, purpose, expires_at)
+       VALUES ($1, $2, $3, 'password_reset', $4)`,
+      [generateId(), user.phone, otp, otpExpiry]
+    );
 
     await sendOTP(user.phone, otp, 'password_reset');
 
@@ -396,13 +405,14 @@ const resetPassword = async (req, res) => {
     const formattedPhone = formatGhanaPhone(phone);
 
     // Find OTP
-    const otpRecord = db.prepare(`
-      SELECT * FROM otp_codes
-      WHERE phone = ? AND code = ? AND purpose = 'password_reset' AND used = 0 AND expires_at > datetime('now')
-      ORDER BY created_at DESC LIMIT 1
-    `).get(formattedPhone, code);
+    const otpResult = await db.query(
+      `SELECT * FROM otp_codes
+       WHERE phone = $1 AND code = $2 AND purpose = 'password_reset' AND used = false AND expires_at > NOW()
+       ORDER BY created_at DESC LIMIT 1`,
+      [formattedPhone, code]
+    );
 
-    if (!otpRecord) {
+    if (otpResult.rows.length === 0) {
       return res.status(400).json({
         success: false,
         error: {
@@ -412,15 +422,19 @@ const resetPassword = async (req, res) => {
       });
     }
 
+    const otpRecord = otpResult.rows[0];
+
     // Hash new password
     const passwordHash = await bcrypt.hash(newPassword, 10);
 
     // Update password
-    db.prepare('UPDATE users SET password_hash = ?, updated_at = datetime("now") WHERE phone = ?')
-      .run(passwordHash, formattedPhone);
+    await db.query(
+      'UPDATE users SET password_hash = $1, updated_at = NOW() WHERE phone = $2',
+      [passwordHash, formattedPhone]
+    );
 
     // Mark OTP as used
-    db.prepare('UPDATE otp_codes SET used = 1 WHERE id = ?').run(otpRecord.id);
+    await db.query('UPDATE otp_codes SET used = true WHERE id = $1', [otpRecord.id]);
 
     res.json({
       success: true,
@@ -467,10 +481,12 @@ const verifyIdentity = async (req, res) => {
     }
 
     // Check if card already used
-    const existingUser = db.prepare('SELECT id FROM users WHERE ghana_card_number = ? AND id != ?')
-      .get(ghanaCardNumber, userId);
+    const existingResult = await db.query(
+      'SELECT id FROM users WHERE ghana_card_number = $1 AND id != $2',
+      [ghanaCardNumber, userId]
+    );
 
-    if (existingUser) {
+    if (existingResult.rows.length > 0) {
       return res.status(400).json({
         success: false,
         error: {
@@ -494,14 +510,15 @@ const verifyIdentity = async (req, res) => {
     }
 
     // Update user with verified identity
-    db.prepare(`
-      UPDATE users
-      SET ghana_card_number = ?,
-          verification_status = 'VERIFIED',
-          digital_address = COALESCE(digital_address, ?),
-          updated_at = datetime('now')
-      WHERE id = ?
-    `).run(ghanaCardNumber, verification.data.address, userId);
+    await db.query(
+      `UPDATE users
+       SET ghana_card_number = $1,
+           verification_status = 'VERIFIED',
+           digital_address = COALESCE(digital_address, $2),
+           updated_at = NOW()
+       WHERE id = $3`,
+      [ghanaCardNumber, verification.data.address, userId]
+    );
 
     res.json({
       success: true,
@@ -571,10 +588,11 @@ const resendOTP = async (req, res) => {
     const otp = generateOTP();
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
-    db.prepare(`
-      INSERT INTO otp_codes (id, phone, code, purpose, expires_at)
-      VALUES (?, ?, ?, ?, ?)
-    `).run(generateId(), formattedPhone, otp, purpose || 'verification', otpExpiry);
+    await db.query(
+      `INSERT INTO otp_codes (id, phone, code, purpose, expires_at)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [generateId(), formattedPhone, otp, purpose || 'verification', otpExpiry]
+    );
 
     await sendOTP(formattedPhone, otp, purpose || 'verification');
 
