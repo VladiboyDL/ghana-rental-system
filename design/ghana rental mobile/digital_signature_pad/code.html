@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#006b3e",
+                        "background-light": "#f5f8f7",
+                        "background-dark": "#0f231b",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .signature-pad {
+            background-image: 
+                linear-gradient(to right, #cbd5e1 50%, rgba(255, 255, 255, 0) 0%);
+            background-position: bottom 60px left 24px, bottom 60px right 24px;
+            background-size: 20px 2px;
+            background-repeat: repeat-x;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#0c1d16] dark:text-white antialiased">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<!-- Header: TopAppBar -->
+<div class="flex items-center bg-white dark:bg-background-dark p-4 pb-2 justify-between border-b border-gray-100 dark:border-gray-800">
+<div aria-label="Go back" class="text-[#0c1d16] dark:text-white flex size-12 shrink-0 items-center cursor-pointer">
+<span class="material-symbols-outlined">arrow_back_ios</span>
+</div>
+<h2 class="text-[#0c1d16] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">Sign Contract</h2>
+</div>
+<div class="flex flex-col flex-grow p-4">
+<!-- HeadlineText & BodyText -->
+<div class="mb-6">
+<h3 class="text-[#0c1d16] dark:text-white tracking-light text-2xl font-bold leading-tight pb-2 pt-5">Sign below</h3>
+<p class="text-[#4a5d54] dark:text-gray-300 text-base font-normal leading-normal">Your signature will be added to the rental contract.</p>
+</div>
+<!-- Signature Pad Area -->
+<div class="relative w-full h-[45vh] bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-end pb-12 overflow-hidden">
+<!-- Visual cue: Signature line -->
+<div class="mx-6 border-b-2 border-dashed border-gray-300 dark:border-gray-600 flex items-end pb-1">
+<span class="text-gray-400 dark:text-gray-500 text-xl font-light mr-2">X</span>
+</div>
+<!-- Placeholder for actual drawing surface -->
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+<span class="material-symbols-outlined text-8xl">gesture</span>
+</div>
+</div>
+<!-- Clear Button: SingleButton Style -->
+<div class="flex py-4 justify-center">
+<button class="flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-4 bg-gray-100 dark:bg-gray-800 text-[#0c1d16] dark:text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+<span class="material-symbols-outlined text-sm mr-2">delete</span>
+<span class="truncate">Clear Signature</span>
+</button>
+</div>
+<!-- Spacer to push content -->
+<div class="flex-grow"></div>
+<!-- Legal Disclaimer -->
+<div class="px-4 py-4 text-center">
+<p class="text-[11px] text-[#4a5d54] dark:text-gray-400 leading-relaxed uppercase tracking-wider">
+                    By signing, I agree that this is a legally binding electronic representation of my signature for the rental agreement and tax compliance under the Laws of Ghana.
+                </p>
+</div>
+<!-- Submit Button: Custom Primary Button -->
+<div class="pb-8 px-4">
+<button class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl h-14 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] shadow-lg active:scale-[0.98] transition-all">
+<span class="truncate">Submit Signature</span>
+</button>
+</div>
+</div>
+</div>
+</body></html>

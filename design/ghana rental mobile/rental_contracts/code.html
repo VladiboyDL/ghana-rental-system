@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Rental Contracts - Ghana Compliance</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#006b3e",
+                        "status-pending": "#f59e0b",
+                        "background-light": "#f5f8f7",
+                        "background-dark": "#0f231b",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Manrope', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen text-slate-900 dark:text-slate-100">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+<div class="flex items-center p-4 pb-2 justify-between">
+<div class="flex items-center gap-3">
+<div class="bg-primary/10 p-2 rounded-lg text-primary">
+<span class="material-symbols-outlined">menu</span>
+</div>
+<h1 class="text-xl font-extrabold leading-tight tracking-tight text-slate-900 dark:text-white">Rental Contracts</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="relative flex size-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 flex h-2 w-2 rounded-full bg-red-500"></span>
+</button>
+</div>
+</div>
+<!-- Tabs (Segmented Control Style) -->
+<div class="px-4 py-3">
+<div class="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-xl">
+<button class="flex-1 py-2 text-sm font-bold rounded-lg bg-white dark:bg-primary shadow-sm text-primary dark:text-white">
+                        All
+                    </button>
+<button class="flex-1 py-2 text-sm font-bold rounded-lg text-slate-500 dark:text-slate-400">
+                        Active
+                    </button>
+<button class="flex-1 py-2 text-sm font-bold rounded-lg text-slate-500 dark:text-slate-400">
+                        Pending
+                    </button>
+</div>
+</div>
+</header>
+<main class="flex-1">
+<!-- SearchBar -->
+<div class="px-4 py-4">
+<label class="relative flex items-center">
+<span class="absolute left-4 text-primary">
+<span class="material-symbols-outlined">search</span>
+</span>
+<input class="w-full h-12 pl-12 pr-4 bg-white dark:bg-slate-900 border-none rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary shadow-sm" placeholder="Search by ID or address" type="text"/>
+</label>
+</div>
+<!-- List Section -->
+<div class="px-4 pb-24 space-y-4">
+<!-- Active Contract Card -->
+<div class="bg-white dark:bg-slate-900 rounded-xl overflow-hidden shadow-sm border border-slate-100 dark:border-slate-800 active:scale-[0.98] transition-transform">
+<div class="p-4">
+<div class="flex justify-between items-start mb-3">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="text-xs font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary uppercase tracking-wider">Active</span>
+<span class="text-xs text-slate-400 font-medium">Updated 2h ago</span>
+</div>
+<h3 class="text-lg font-extrabold text-slate-900 dark:text-white">#GRC-2025-001</h3>
+</div>
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</div>
+<div class="space-y-2 mb-4">
+<div class="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<p class="text-sm font-medium truncate">Plot 42, Kumasi St, East Legon, Accra</p>
+</div>
+<div class="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">person</span>
+<p class="text-sm font-medium">Tenant: Ama Mensah</p>
+</div>
+<div class="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">calendar_today</span>
+<p class="text-sm font-medium">12 Months (Jan '25 - Dec '25)</p>
+</div>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-slate-50 dark:border-slate-800">
+<div>
+<p class="text-[10px] uppercase text-slate-400 font-bold tracking-widest">Monthly Rent</p>
+<p class="text-lg font-extrabold text-primary">GHS 2,500</p>
+</div>
+<div class="h-10 w-16 bg-cover bg-center rounded-lg" data-alt="Modern residential building exterior in Accra" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDgesnqFNwmUZRafGRv5i46dTzhuJl2h6MSSf_wsIFJ0H8k08HN3ntLUmoHcCeDrLFU1pAXXKoD1IqY2bzZ6_482hFfJBqyKROxFkVvUN45rEgSzrni_q26kMtAjaMxZ3hYwu-PimeiRejXbv9b0iqRFl4nduiqWWsuDmoHI1qTqYw5EPfBOPQhVRCeDBjz-o_1jC_68Z1du1pYf6CNQDsKSdCO3DApHQ58UZwCPfjJANBibXTK0qfqzwy5EyWQvGI8cUTfCSxXvl1j')"></div>
+</div>
+</div>
+</div>
+<!-- Pending Contract Card -->
+<div class="bg-white dark:bg-slate-900 rounded-xl overflow-hidden shadow-sm border border-slate-100 dark:border-slate-800 active:scale-[0.98] transition-transform">
+<div class="p-4">
+<div class="flex justify-between items-start mb-3">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="text-xs font-bold px-2 py-0.5 rounded-full bg-status-pending/10 text-status-pending uppercase tracking-wider">Pending</span>
+<span class="text-xs text-slate-400 font-medium">Awaiting ID Verification</span>
+</div>
+<h3 class="text-lg font-extrabold text-slate-900 dark:text-white">#GRC-2025-002</h3>
+</div>
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</div>
+<div class="space-y-2 mb-4">
+<div class="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<p class="text-sm font-medium truncate">Suite 15, Airport Residential Area, Accra</p>
+</div>
+<div class="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">person</span>
+<p class="text-sm font-medium">Tenant: Kwesi Appiah</p>
+</div>
+<div class="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">calendar_today</span>
+<p class="text-sm font-medium">24 Months (Mar '25 - Feb '27)</p>
+</div>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-slate-50 dark:border-slate-800">
+<div>
+<p class="text-[10px] uppercase text-slate-400 font-bold tracking-widest">Monthly Rent</p>
+<p class="text-lg font-extrabold text-slate-900 dark:text-white">GHS 5,200</p>
+</div>
+<div class="h-10 w-16 bg-cover bg-center rounded-lg grayscale opacity-60" data-alt="Luxury apartment floor plan illustration" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC2-spGwBn0CLTYOLBGRXFTYHCypfF0E4tZl0Pt40hLy9ofASxpR5mchXmZpYxsxSXUFsO6SVB0geS2dgBS2mvR-BiXhvzBFdweAAfVgprrE_4GsLeOR2xYCMGe8xJsjYBknW0XDiCNxJJ24G4PXVvu-Az9hhTDjuzLOHCPtBlHDZmSQXt4kexasEpXkz-zpSE4pEPKcgvZdiJyV8b5JBmvpObtaRQ2qqNZxSF4ffYRRplbnPBqIWHunXyFmzoYsNIIWGwwVS-8KzMi')"></div>
+</div>
+</div>
+</div>
+<!-- Another Active Contract -->
+<div class="bg-white dark:bg-slate-900 rounded-xl overflow-hidden shadow-sm border border-slate-100 dark:border-slate-800 active:scale-[0.98] transition-transform">
+<div class="p-4">
+<div class="flex justify-between items-start mb-3">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="text-xs font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary uppercase tracking-wider">Active</span>
+<span class="text-xs text-slate-400 font-medium">Verified by GRA</span>
+</div>
+<h3 class="text-lg font-extrabold text-slate-900 dark:text-white">#GRC-2024-892</h3>
+</div>
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</div>
+<div class="space-y-2 mb-4">
+<div class="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<p class="text-sm font-medium truncate">Apt 4B, Cantonments View, Accra</p>
+</div>
+<div class="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">person</span>
+<p class="text-sm font-medium">Tenant: Kofi Boakye</p>
+</div>
+<div class="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">calendar_today</span>
+<p class="text-sm font-medium">6 Months (Nov '24 - May '25)</p>
+</div>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-slate-50 dark:border-slate-800">
+<div>
+<p class="text-[10px] uppercase text-slate-400 font-bold tracking-widest">Monthly Rent</p>
+<p class="text-lg font-extrabold text-primary">GHS 1,800</p>
+</div>
+<div class="h-10 w-16 bg-cover bg-center rounded-lg" data-alt="Modern studio apartment layout view" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCRZZntnwOZktOqvv9sbu4KEJD0i426Tw2HXCNZO6KiFYC1ydPiWHbXGpeJASCUK4NI3urQmVWoRNpVmtRMbyWNuNFMupkHmPU5Y2oxlLWuSKD98RyHq2pO0Y5WPbxmEa7PFFdPA_LsRiLevrru5X8PF34TgWIcPm3nQ2GKFUESdhJXpjG0s2f3U1WuVlfgHwWWWuJOBHrsAdnlgNWLXQ5jzuC1aIp0yFEvvxsZH5zh0RpzxU1E5EnUwD3L28p9MvbKJxcTqWIfYWnY')"></div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Action Button -->
+<div class="fixed bottom-24 right-6">
+<button class="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-white shadow-xl hover:scale-105 transition-transform active:scale-95">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+</div>
+<!-- Bottom Navigation (iOS Style) -->
+<nav class="fixed bottom-0 w-full bg-white/90 dark:bg-background-dark/90 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 pb-6 pt-2">
+<div class="flex justify-around items-center px-4">
+<div class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter">Home</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">description</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter">Contracts</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter">Payments</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter">Profile</span>
+</div>
+</div>
+</nav>
+</div>
+</body></html>

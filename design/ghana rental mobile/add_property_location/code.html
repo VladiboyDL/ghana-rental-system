@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Add Property - Location</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#006b3e",
+                        "background-light": "#f5f8f7",
+                        "background-dark": "#0f231b",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>body {
+    font-family: "Manrope", sans-serif
+    }
+.material-symbols-outlined {
+    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24
+    }
+.ios-shadow {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)
+    }
+select {
+    appearance: none;
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuDZ09KydAlYo0ib35BQv9LNpwl-YwXXNmRiAuotp1CPlAhv2ChLIx9k9eTuphXoRwzFUzJWDkOXQhZk5K1NC41v1vdAweaWnL0tvo_pieuVfxEnjG9gfRYuVKe5EcRaS7ro9K9TQIgZr7q4NF4IPXpE4ji03-8oiduw4YqyzhImgt6d16ap9BX3XbX8a2UCMZKCCD-qJl3JCT4OvshgkHmwprtTVNN_zDox0Gg3p-N3DGctMW87DHJYr-HBdZYaKa_jw7C9LInV8H2Y);
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1.5em
+    }</style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen">
+<div class="max-w-md mx-auto min-h-screen flex flex-col bg-white dark:bg-[#142d24]">
+<!-- TopAppBar -->
+<header class="flex items-center px-4 py-4 sticky top-0 bg-white dark:bg-[#142d24] z-10">
+<button class="text-primary p-1">
+<span class="material-symbols-outlined">arrow_back_ios</span>
+</button>
+<h1 class="text-[#0c1d16] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-8">
+                Add Property
+            </h1>
+</header>
+<!-- ProgressBar Section -->
+<div class="px-6 py-4">
+<div class="flex flex-col gap-3">
+<div class="flex gap-6 justify-between items-center">
+<p class="text-[#0c1d16] dark:text-white/90 text-sm font-semibold uppercase tracking-wider">Property Location</p>
+<p class="text-primary text-sm font-bold leading-normal">Step 1 of 3</p>
+</div>
+<div class="rounded-full bg-[#cdeade] dark:bg-primary/20 h-2.5 overflow-hidden">
+<div class="h-full rounded-full bg-primary" style="width: 33.3%;"></div>
+</div>
+</div>
+</div>
+<!-- Form Section -->
+<main class="flex-1 px-6 pb-24 overflow-y-auto">
+<div class="space-y-6 pt-4">
+<!-- Digital Address Field -->
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-center">
+<label class="text-[#0c1d16] dark:text-white/80 text-base font-medium">Digital Address</label>
+<span class="text-primary text-xs flex items-center gap-1 font-semibold">
+<span class="material-symbols-outlined text-[14px]">info</span>
+                            Ghana Post GPS
+                        </span>
+</div>
+<input class="w-full rounded-lg border border-[#cdeade] dark:border-primary/30 bg-white dark:bg-background-dark/50 text-[#0c1d16] dark:text-white h-14 px-4 focus:ring-2 focus:ring-primary focus:border-primary placeholder:text-gray-400" placeholder="GA-123-4567" type="text"/>
+</div>
+<!-- Region Dropdown -->
+<div class="flex flex-col gap-2">
+<label class="text-[#0c1d16] dark:text-white/80 text-base font-medium">Region</label>
+<select class="w-full rounded-lg border border-[#cdeade] dark:border-primary/30 bg-white dark:bg-background-dark/50 text-[#0c1d16] dark:text-white h-14 px-4 focus:ring-2 focus:ring-primary focus:border-primary">
+<option disabled="" selected="" value="">Select Region</option>
+<option value="greater-accra">Greater Accra</option>
+<option value="ashanti">Ashanti</option>
+<option value="central">Central</option>
+<option value="western">Western</option>
+<option value="northern">Northern</option>
+</select>
+</div>
+<!-- District Dropdown -->
+<div class="flex flex-col gap-2">
+<label class="text-[#0c1d16] dark:text-white/80 text-base font-medium">District</label>
+<select class="w-full rounded-lg border border-[#cdeade] dark:border-primary/30 bg-white dark:bg-background-dark/50 text-[#0c1d16] dark:text-white h-14 px-4 focus:ring-2 focus:ring-primary focus:border-primary">
+<option disabled="" selected="" value="">Select District</option>
+<option value="accra-metro">Accra Metropolitan</option>
+<option value="adentan">Adentan Municipal</option>
+<option value="tema">Tema Metropolitan</option>
+<option value="ga-west">Ga West Municipal</option>
+</select>
+</div>
+<!-- City/Town Field -->
+<div class="flex flex-col gap-2">
+<label class="text-[#0c1d16] dark:text-white/80 text-base font-medium">City / Town</label>
+<input class="w-full rounded-lg border border-[#cdeade] dark:border-primary/30 bg-white dark:bg-background-dark/50 text-[#0c1d16] dark:text-white h-14 px-4 focus:ring-2 focus:ring-primary focus:border-primary placeholder:text-gray-400" placeholder="e.g. East Legon" type="text"/>
+</div>
+<!-- Street Address Field -->
+<div class="flex flex-col gap-2">
+<label class="text-[#0c1d16] dark:text-white/80 text-base font-medium">Street Address &amp; Landmarks</label>
+<textarea class="w-full rounded-lg border border-[#cdeade] dark:border-primary/30 bg-white dark:bg-background-dark/50 text-[#0c1d16] dark:text-white p-4 focus:ring-2 focus:ring-primary focus:border-primary placeholder:text-gray-400 resize-none" placeholder="House Number, Street name, or closest landmark" rows="3"></textarea>
+</div>
+<!-- Map Preview (Aesthetic addition for property context) -->
+<div class="relative w-full h-32 rounded-lg overflow-hidden border border-[#cdeade] dark:border-primary/30 mt-2">
+<img alt="Location preview" class="w-full h-full object-cover opacity-60 dark:opacity-40 grayscale" data-alt="Abstract map showing a city location grid" data-location="Accra" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCyH1FP5G3XIibgEsa2sUx-eB_kjNMxrm5ONB5l0oGTXZLZfCX7T0WVSVNaGTKp_J8XmFJfPlP88KULzkTXJWN75nbNyWq2jI5yWtklzz5Vk7tVAaMnQ3PyPQq7TmD2KphGEfy5T79gZ_VZN5HBjFl7QAijwDkV4Imn3CUudh_B64fuBHmBhjUEtILC1-UnFZm4H1uzQ7QPfOMIGg6isuFVNoHHmWCwArk_lUOa5aZogAia_SKnJUcaoyDwHhz8aqsXiR9X2_DTSTGo"/>
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="bg-white/90 dark:bg-background-dark/90 px-3 py-1.5 rounded-full flex items-center gap-2 border border-primary/20">
+<span class="material-symbols-outlined text-primary text-sm">location_on</span>
+<span class="text-xs font-semibold text-primary">Verify on map</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Action Bar -->
+<div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto p-4 bg-white/80 dark:bg-[#142d24]/80 backdrop-blur-md border-t border-gray-100 dark:border-white/5">
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-lg shadow-lg active:scale-[0.98] transition-all">
+                Continue to Details
+            </button>
+<!-- iPhone Home Indicator Spacer -->
+<div class="h-6"></div>
+</div>
+</div>
+</body></html>

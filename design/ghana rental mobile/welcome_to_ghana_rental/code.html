@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ghana Rental - Welcome</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#006b3e",
+                        "ghana-gold": "#FCD116",
+                        "dark-green": "#004D2C",
+                        "background-light": "#f5f8f7",
+                        "background-dark": "#0f231b",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display">
+<!-- Main Wrapper with Linear Gradient Background -->
+<div class="relative flex h-screen w-full flex-col bg-gradient-to-b from-[#006B3F] to-[#004D2C] group/design-root overflow-hidden overflow-y-auto">
+<!-- Status Bar Space (iOS) -->
+<div class="h-12 w-full"></div>
+<!-- Top Brand Section -->
+<div class="flex flex-col items-center px-6 pt-8 pb-4">
+<!-- Circular Logo Container -->
+<div class="flex h-[100px] w-[100px] items-center justify-center rounded-full bg-ghana-gold shadow-lg mb-6">
+<span class="material-symbols-outlined text-[#004D2C] text-[48px] font-bold">home</span>
+</div>
+<!-- HeadlineText Replacement -->
+<h1 class="text-white text-[32px] font-extrabold leading-tight tracking-tight text-center">Ghana Rental</h1>
+<!-- BodyText Replacement -->
+<p class="text-white/70 text-base font-medium leading-normal text-center mt-1">Tax Compliance System</p>
+</div>
+<!-- ImageGrid / Feature Section with Glassmorphism -->
+<div class="grid grid-cols-2 gap-4 p-6 flex-grow items-center">
+<div class="glass-card flex flex-col items-center justify-center p-5 rounded-xl aspect-square text-center">
+<div class="bg-white/10 rounded-full p-3 mb-3">
+<span class="material-symbols-outlined text-white">description</span>
+</div>
+<p class="text-white text-sm font-bold leading-tight">Digital Contracts</p>
+</div>
+<div class="glass-card flex flex-col items-center justify-center p-5 rounded-xl aspect-square text-center">
+<div class="bg-white/10 rounded-full p-3 mb-3">
+<span class="material-symbols-outlined text-white">fingerprint</span>
+</div>
+<p class="text-white text-sm font-bold leading-tight">ID Verification</p>
+</div>
+<div class="glass-card flex flex-col items-center justify-center p-5 rounded-xl aspect-square text-center">
+<div class="bg-white/10 rounded-full p-3 mb-3">
+<span class="material-symbols-outlined text-white">payments</span>
+</div>
+<p class="text-white text-sm font-bold leading-tight">Easy Payments</p>
+</div>
+<div class="glass-card flex flex-col items-center justify-center p-5 rounded-xl aspect-square text-center">
+<div class="bg-white/10 rounded-full p-3 mb-3">
+<span class="material-symbols-outlined text-white">verified_user</span>
+</div>
+<p class="text-white text-sm font-bold leading-tight">GRA Compliant</p>
+</div>
+</div>
+<!-- ButtonGroup Section -->
+<div class="flex flex-col gap-4 px-6 py-8">
+<button class="flex h-14 w-full cursor-pointer items-center justify-center rounded-xl bg-ghana-gold text-[#004D2C] text-lg font-bold tracking-tight shadow-md hover:opacity-90 active:scale-[0.98] transition-all">
+                Create Account
+            </button>
+<button class="flex h-14 w-full cursor-pointer items-center justify-center rounded-xl border-2 border-white bg-transparent text-white text-lg font-bold tracking-tight hover:bg-white/10 active:scale-[0.98] transition-all">
+                Sign In
+            </button>
+</div>
+<!-- Footer Text -->
+<div class="pb-10 px-6 text-center">
+<p class="text-white/50 text-xs font-medium uppercase tracking-widest">A Ghana Revenue Authority Initiative</p>
+</div>
+<!-- iOS Home Indicator Space -->
+<div class="h-6 w-full"></div>
+</div>
+</body></html>

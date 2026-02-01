@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Inspector Task Queue - GRA Portal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#006b3e",
+                        "background-light": "#f5f8f7",
+                        "background-dark": "#0f231b",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="flex min-h-screen">
+<!-- Sidebar -->
+<aside class="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark flex flex-col fixed h-full">
+<div class="p-6">
+<div class="flex items-center gap-3 mb-8">
+<div class="bg-primary size-10 rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined">account_balance</span>
+</div>
+<div class="flex flex-col">
+<h1 class="text-primary text-base font-bold leading-none">GRA Portal</h1>
+<p class="text-slate-500 text-xs font-medium">Inspector Role</p>
+</div>
+</div>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 bg-primary/10 text-primary rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">assignment_turned_in</span>
+<span class="text-sm font-medium">Task Queue</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">bar_chart</span>
+<span class="text-sm font-medium">Reports</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</a>
+</nav>
+</div>
+<div class="mt-auto p-6 border-t border-slate-200 dark:border-slate-800">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-slate-200 dark:bg-slate-700 bg-cover" data-alt="Profile picture of the officer" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuClyVLGUVqYV9lr95zk9eyoAuG7g5bAozsYcdEnOX3XkYPYr1fK04cs7xj_emzEf1jQUDj5k8Gwi90X4AaZY0KlW6jUT3UCwQEBvR4o4vQa311jsXWDos_BeHm_NM9nTvMuBw4JkXdnsVXosMcf3AMCFTREiaLvm-fMbqAOkj4Pj85zIYZ-5luEY7uQSdJdkXAKATjbM8504JEvXGG77OFDv9iFacZcM8GPW_JP61WDnNdLJGGsJVIt2imRUo55eVUoOtopocW5EW-f')"></div>
+<div class="flex flex-col">
+<p class="text-xs font-bold">John Mensah</p>
+<p class="text-[10px] text-slate-500">Officer #9234</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 ml-64 p-8">
+<!-- Page Header -->
+<div class="flex flex-wrap justify-between items-center gap-4 mb-8">
+<div>
+<h2 class="text-slate-900 dark:text-white text-3xl font-black tracking-tight">Inspector Task Queue</h2>
+<p class="text-slate-500 dark:text-slate-400 mt-1">Manage and track your daily field inspections.</p>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+<span class="material-symbols-outlined text-sm">refresh</span>
+                        Refresh
+                    </button>
+<button class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">add</span>
+                        New Case
+                    </button>
+</div>
+</div>
+<!-- Stats Ribbon -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+<div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between">
+<div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Assigned Cases</p>
+<p class="text-3xl font-black text-slate-900 dark:text-white mt-1">12</p>
+</div>
+<div class="bg-blue-100 dark:bg-blue-900/30 text-blue-600 p-3 rounded-lg">
+<span class="material-symbols-outlined">folder_open</span>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between">
+<div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Completed Today</p>
+<p class="text-3xl font-black text-slate-900 dark:text-white mt-1">3</p>
+</div>
+<div class="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 p-3 rounded-lg">
+<span class="material-symbols-outlined">verified</span>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between">
+<div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Pending Review</p>
+<p class="text-3xl font-black text-slate-900 dark:text-white mt-1">4</p>
+</div>
+<div class="bg-amber-100 dark:bg-amber-900/30 text-amber-600 p-3 rounded-lg">
+<span class="material-symbols-outlined">pending_actions</span>
+</div>
+</div>
+</div>
+<!-- Queue Header -->
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    My Inspection Queue
+                    <span class="bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs px-2 py-0.5 rounded-full">8 Active</span>
+</h3>
+<div class="flex items-center gap-2">
+<span class="text-sm text-slate-500">Filter by:</span>
+<select class="text-sm border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-lg py-1 px-3">
+<option>All Priorities</option>
+<option>High Priority</option>
+<option>Medium Priority</option>
+</select>
+</div>
+</div>
+<!-- Task Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<!-- Card 1: High Priority -->
+<div class="bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-sm border-l-4 border-l-red-500 border-y border-r border-slate-200 dark:border-slate-700 flex flex-col md:flex-row">
+<div class="md:w-48 h-48 md:h-auto bg-cover bg-center shrink-0" data-alt="Exterior view of a modern house in Adum" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuALjn0BAqrIkg014nc2gckw9oI02KAiTo2H1hgyO-1adGp_7uP_6OQ0r25-4bID-C5bjNxUhHLNgTGvE5T6Ylhos3t276IbMF-d-Dpq_I_Z6fpBZdx1a-HQb89UcgszY70NAM6gERzITXiIQ4StYMBimZqblf_5v95aapNb04pAscTnIlL67EiOG83xTRigI3i_hVnLGlDXhLcTDckJTTxSAW3a7_CusgNxF6-1lr8NgyFtRMfbNmHmo8YiN9WzH9fX6lHZ0lx_vQp4')"></div>
+<div class="flex-1 p-6 flex flex-col">
+<div class="flex justify-between items-start mb-2">
+<span class="text-[10px] font-bold tracking-widest uppercase text-red-500 flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">error</span>
+                                High Priority
+                            </span>
+<span class="text-xs text-slate-400">Assigned 2h ago</span>
+</div>
+<h4 class="text-lg font-bold text-slate-900 dark:text-white mb-1">House No. 45, Adum</h4>
+<div class="space-y-1 mb-6">
+<div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">person</span>
+                                Owner: Kofi Mensah
+                            </div>
+<div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">warning</span>
+                                Issue: Suspected unreported income
+                            </div>
+</div>
+<div class="mt-auto flex flex-wrap gap-2 pt-4 border-t border-slate-100 dark:border-slate-700">
+<button class="bg-primary text-white text-xs font-bold py-2 px-4 rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">play_arrow</span>
+                                Start Inspection
+                            </button>
+<button class="bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-white text-xs font-bold py-2 px-4 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">directions</span>
+                                Get Directions
+                            </button>
+<button class="text-slate-500 text-xs font-bold py-2 px-2 hover:underline">
+                                View Details
+                            </button>
+</div>
+</div>
+</div>
+<!-- Card 2: Medium Priority -->
+<div class="bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-sm border-l-4 border-l-amber-400 border-y border-r border-slate-200 dark:border-slate-700 flex flex-col md:flex-row">
+<div class="md:w-48 h-48 md:h-auto bg-cover bg-center shrink-0" data-alt="Apartment block in Kumasi City" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDXmiK-5MwjqUVFbkeWAiLZGH_x6UqYsD0E8c7Ep6-KZK6lGVrG8iXTtsDO2mUW8z54Cv5FBZyFraWyPjuXYOc3CFJvWJ-jeOLAVx404Devl0IW8NwoC0ylx_hgvFmLGpb8Tn3qeMEVLuUfPXPNROqV1B1oCQc1uCb2JEL6Wr552McwUEYQcqEY1pj6yqZ3fc6mJNXgcnN2wbIeaXjvCADpBq_8LCB92reH2b49kjCLTjtZ4z0_snAIBrZX3YdKL6qg4ipCaQipOWe1')"></div>
+<div class="flex-1 p-6 flex flex-col">
+<div class="flex justify-between items-start mb-2">
+<span class="text-[10px] font-bold tracking-widest uppercase text-amber-500 flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">info</span>
+                                Medium Priority
+                            </span>
+<span class="text-xs text-slate-400">Assigned 5h ago</span>
+</div>
+<h4 class="text-lg font-bold text-slate-900 dark:text-white mb-1">Plot 12, Kumasi Central</h4>
+<div class="space-y-1 mb-6">
+<div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">person</span>
+                                Owner: Ama Serwaa
+                            </div>
+<div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">warning</span>
+                                Issue: Unregistered rental unit
+                            </div>
+</div>
+<div class="mt-auto flex flex-wrap gap-2 pt-4 border-t border-slate-100 dark:border-slate-700">
+<button class="bg-primary text-white text-xs font-bold py-2 px-4 rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">play_arrow</span>
+                                Start Inspection
+                            </button>
+<button class="bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-white text-xs font-bold py-2 px-4 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">directions</span>
+                                Get Directions
+                            </button>
+<button class="text-slate-500 text-xs font-bold py-2 px-2 hover:underline">
+                                View Details
+                            </button>
+</div>
+</div>
+</div>
+<!-- Card 3: High Priority -->
+<div class="bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-sm border-l-4 border-l-red-500 border-y border-r border-slate-200 dark:border-slate-700 flex flex-col md:flex-row">
+<div class="md:w-48 h-48 md:h-auto bg-cover bg-center shrink-0" data-alt="Commercial property in Labone" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAODvBvOGcO0XqPYtdl41gXM-jodKR-IQmzltaPrE7fknnOMEDtKtXSeJ2PSmbhGL-GzVpVeovMA52c5ajnvEENA06d306_JDn6JtRCToO-Jp1ZJ9FJjtldeU8b-o3fPPIu1DmrLG9ryOS6EWxlAFpmeeWlbc6HhP17kv1bmnNzRBxh9or7yXSx7688WDWULiNVJXP9-qPlEAeNoRdsywBgw69Eez6VHHpBIGFcdgYyyP_6l5OGvRdgQxD6LOfQkyksVl0sUKyc79B4')"></div>
+<div class="flex-1 p-6 flex flex-col">
+<div class="flex justify-between items-start mb-2">
+<span class="text-[10px] font-bold tracking-widest uppercase text-red-500 flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">error</span>
+                                High Priority
+                            </span>
+<span class="text-xs text-slate-400">Assigned 8h ago</span>
+</div>
+<h4 class="text-lg font-bold text-slate-900 dark:text-white mb-1">Block C, Labone Towers</h4>
+<div class="space-y-1 mb-6">
+<div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">person</span>
+                                Owner: Samuel Adjaye
+                            </div>
+<div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">warning</span>
+                                Issue: Change of use violation
+                            </div>
+</div>
+<div class="mt-auto flex flex-wrap gap-2 pt-4 border-t border-slate-100 dark:border-slate-700">
+<button class="bg-primary text-white text-xs font-bold py-2 px-4 rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">play_arrow</span>
+                                Start Inspection
+                            </button>
+<button class="bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-white text-xs font-bold py-2 px-4 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">directions</span>
+                                Get Directions
+                            </button>
+<button class="text-slate-500 text-xs font-bold py-2 px-2 hover:underline">
+                                View Details
+                            </button>
+</div>
+</div>
+</div>
+<!-- Card 4: Medium Priority -->
+<div class="bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-sm border-l-4 border-l-amber-400 border-y border-r border-slate-200 dark:border-slate-700 flex flex-col md:flex-row opacity-80">
+<div class="md:w-48 h-48 md:h-auto bg-cover bg-center shrink-0 grayscale" data-alt="Residential home in Tema community" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCIrXNy277HLUQGMoj_57ZoetNoXLCSL0jOTCWYDHogCzUifZTcfDOA5uAZSo7OBDCnABCqmgXYLFoU8f03P-6wsddiQ-ziQYCRzq5COKmUsV7pBWpDGZ0VjadBwnccVK15HruEY9ci24SgPVE48A7WUMDneF_rxJr1aVpAWgticM8S48DYv3mhzLlq4WRx69Xa7DCW_g9KOr5FLQS3p_vkmuZimXzgCeHU3f1Q4X1euIyRcWiW_0pFwDprCX8NQuBnbZ6ak7d2Of-J')"></div>
+<div class="flex-1 p-6 flex flex-col">
+<div class="flex justify-between items-start mb-2">
+<span class="text-[10px] font-bold tracking-widest uppercase text-amber-500 flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">info</span>
+                                Medium Priority
+                            </span>
+<span class="text-xs text-slate-400">Assigned yesterday</span>
+</div>
+<h4 class="text-lg font-bold text-slate-900 dark:text-white mb-1">House 88, Tema Comm 5</h4>
+<div class="space-y-1 mb-6">
+<div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">person</span>
+                                Owner: Janet Osei
+                            </div>
+<div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">warning</span>
+                                Issue: Rent tax arrears
+                            </div>
+</div>
+<div class="mt-auto flex flex-wrap gap-2 pt-4 border-t border-slate-100 dark:border-slate-700">
+<button class="bg-primary text-white text-xs font-bold py-2 px-4 rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">play_arrow</span>
+                                Start Inspection
+                            </button>
+<button class="bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-white text-xs font-bold py-2 px-4 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">directions</span>
+                                Get Directions
+                            </button>
+<button class="text-slate-500 text-xs font-bold py-2 px-2 hover:underline">
+                                View Details
+                            </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Map View Toggle Floating Button (Mobile hint) -->
+<button class="fixed bottom-8 right-8 bg-primary text-white p-4 rounded-full shadow-lg flex items-center gap-2 z-50 hover:scale-105 transition-transform active:scale-95">
+<span class="material-symbols-outlined">map</span>
+<span class="font-bold">Switch to Map View</span>
+</button>
+</main>
+</div>
+</body></html>

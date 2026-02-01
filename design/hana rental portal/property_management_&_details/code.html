@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Property Management - Ghana Rental Authority</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#006b3e",
+                        "background-light": "#f5f8f7",
+                        "background-dark": "#0f231b",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen">
+<!-- Top Navigation Bar -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-primary/10 bg-white dark:bg-background-dark px-10 py-3 sticky top-0 z-50">
+<div class="flex items-center gap-4 text-primary">
+<div class="size-8 text-primary">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M39.475 21.6262C40.358 21.4363 40.6863 21.5589 40.7581 21.5934C40.7876 21.655 40.8547 21.857 40.8082 22.3336C40.7408 23.0255 40.4502 24.0046 39.8572 25.2301C38.6799 27.6631 36.5085 30.6631 33.5858 33.5858C30.6631 36.5085 27.6632 38.6799 25.2301 39.8572C24.0046 40.4502 23.0255 40.7407 22.3336 40.8082C21.8571 40.8547 21.6551 40.7875 21.5934 40.7581C21.5589 40.6863 21.4363 40.358 21.6262 39.475C21.8562 38.4054 22.4689 36.9657 23.5038 35.2817C24.7575 33.2417 26.5497 30.9744 28.7621 28.762C30.9744 26.5497 33.2417 24.7574 35.2817 23.5037C36.9657 22.4689 38.4054 21.8562 39.475 21.6262ZM4.41189 29.2403L18.7597 43.5881C19.8813 44.7097 21.4027 44.9179 22.7217 44.7893C24.0585 44.659 25.5148 44.1631 26.9723 43.4579C29.9052 42.0387 33.2618 39.5667 36.4142 36.4142C39.5667 33.2618 42.0387 29.9052 43.4579 26.9723C44.1631 25.5148 44.659 24.0585 44.7893 22.7217C44.9179 21.4027 44.7097 19.8813 43.5881 18.7597L29.2403 4.41187C27.8527 3.02428 25.8765 3.02573 24.2861 3.36776C22.6081 3.72863 20.7334 4.58419 18.8396 5.74801C16.4978 7.18716 13.9881 9.18353 11.5858 11.5858C9.18354 13.988 7.18717 16.4978 5.74802 18.8396C4.58421 20.7334 3.72865 22.6081 3.36778 24.2861C3.02574 25.8765 3.02429 27.8527 4.41189 29.2403Z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+<h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em] font-display">GRA Portal</h2>
+</div>
+<div class="flex flex-1 justify-end gap-8">
+<nav class="flex items-center gap-8">
+<a class="text-gray-600 dark:text-gray-300 text-sm font-medium hover:text-primary transition-colors" href="#">Dashboard</a>
+<a class="text-primary text-sm font-bold border-b-2 border-primary py-4" href="#">Properties</a>
+<a class="text-gray-600 dark:text-gray-300 text-sm font-medium hover:text-primary transition-colors" href="#">Inspections</a>
+<a class="text-gray-600 dark:text-gray-300 text-sm font-medium hover:text-primary transition-colors" href="#">Reports</a>
+<a class="text-gray-600 dark:text-gray-300 text-sm font-medium hover:text-primary transition-colors" href="#">Users</a>
+</nav>
+<div class="flex gap-2">
+<button class="flex items-center justify-center rounded-lg h-10 w-10 bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="flex items-center justify-center rounded-lg h-10 w-10 bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary/20" data-alt="Portrait of a GRA Officer in uniform" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAo9D-sJkrh_yUo-y91G2qh4C-u2_A0ca5gdMEnZNs3Dm0rwuCwFLhH2OWLGsxQb0Bz6xnKYq8dliMuCXux7P0QzHXC_7Gdl96-0axu2x2WsxHoeAybU3EazE80o0Z4GHb7HUW9wNeFPjhS_lXtgY8m3uFitaIKHm8azRG1LSSP8aTssOVJI_MVimb3agBhDw-JWwoDZcAui3vWglseTdtRc3yN8OaqsghiLBvL7XjntlEL53KQQ46ubBlqxAWx07MHt1AZA_wnIxjF");'></div>
+</div>
+</header>
+<main class="flex h-[calc(100vh-65px)]">
+<!-- Left Content Area (Scrollable Table) -->
+<div class="flex-1 overflow-y-auto px-8 py-6">
+<!-- Page Heading -->
+<div class="flex flex-wrap justify-between gap-3 mb-6">
+<div class="flex min-w-72 flex-col gap-1">
+<p class="text-gray-900 dark:text-white text-3xl font-black leading-tight tracking-[-0.033em] font-display">Property Management</p>
+<p class="text-primary text-base font-normal">Manage and verify property listings across Ghana's regions.</p>
+</div>
+<div class="flex items-center">
+<button class="bg-primary text-white px-5 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-primary/90 transition-all">
+<span class="material-symbols-outlined text-sm">add</span> Add New Property
+                    </button>
+</div>
+</div>
+<!-- Tabs -->
+<div class="mb-4">
+<div class="flex border-b border-primary/10 gap-8">
+<a class="flex flex-col items-center justify-center border-b-[3px] border-primary text-primary pb-3 pt-4 font-bold text-sm tracking-wide" href="#">
+                        All
+                    </a>
+<a class="flex flex-col items-center justify-center border-b-[3px] border-transparent text-gray-500 pb-3 pt-4 font-bold text-sm hover:text-primary transition-colors" href="#">
+                        Verified
+                    </a>
+<a class="flex flex-col items-center justify-center border-b-[3px] border-transparent text-gray-500 pb-3 pt-4 font-bold text-sm hover:text-primary transition-colors" href="#">
+                        Pending
+                    </a>
+<a class="flex flex-col items-center justify-center border-b-[3px] border-transparent text-gray-500 pb-3 pt-4 font-bold text-sm hover:text-primary transition-colors" href="#">
+                        Flagged
+                    </a>
+</div>
+</div>
+<!-- Filters & Search -->
+<div class="flex flex-wrap items-center gap-4 mb-6">
+<div class="flex-1 min-w-[300px]">
+<label class="flex flex-col h-11 w-full">
+<div class="flex w-full flex-1 items-stretch rounded-lg bg-white dark:bg-background-dark border border-primary/20 shadow-sm">
+<div class="text-primary/60 flex items-center justify-center pl-4">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="w-full min-w-0 flex-1 border-none bg-transparent focus:ring-0 text-gray-900 dark:text-white px-3 text-sm placeholder:text-gray-400" placeholder="Search by name, address or property ID..."/>
+</div>
+</label>
+</div>
+<div class="flex gap-3">
+<button class="flex h-11 items-center justify-center gap-x-2 rounded-lg bg-white dark:bg-background-dark border border-primary/20 px-4 text-sm font-medium text-gray-700 dark:text-gray-300">
+<span>Region: Greater Accra</span>
+<span class="material-symbols-outlined text-gray-400">expand_more</span>
+</button>
+<button class="flex h-11 items-center justify-center gap-x-2 rounded-lg bg-white dark:bg-background-dark border border-primary/20 px-4 text-sm font-medium text-gray-700 dark:text-gray-300">
+<span>Status: All</span>
+<span class="material-symbols-outlined text-gray-400">expand_more</span>
+</button>
+</div>
+</div>
+<!-- Data Table -->
+<div class="bg-white dark:bg-background-dark rounded-xl border border-primary/10 overflow-hidden shadow-sm">
+<table class="w-full text-left border-collapse">
+<thead class="bg-primary/5 border-b border-primary/10">
+<tr>
+<th class="px-4 py-4 w-12"><input class="rounded border-primary/30 text-primary focus:ring-primary" type="checkbox"/></th>
+<th class="px-4 py-4 text-xs font-bold uppercase tracking-wider text-primary/70">Property</th>
+<th class="px-4 py-4 text-xs font-bold uppercase tracking-wider text-primary/70">Owner</th>
+<th class="px-4 py-4 text-xs font-bold uppercase tracking-wider text-primary/70">Region</th>
+<th class="px-4 py-4 text-xs font-bold uppercase tracking-wider text-primary/70">Status</th>
+<th class="px-4 py-4 text-xs font-bold uppercase tracking-wider text-primary/70 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-primary/5">
+<tr class="hover:bg-primary/5 transition-colors cursor-pointer bg-primary/[0.02]">
+<td class="px-4 py-4"><input checked="" class="rounded border-primary/30 text-primary focus:ring-primary" type="checkbox"/></td>
+<td class="px-4 py-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">apartment</span>
+</div>
+<div>
+<div class="font-bold text-gray-900 dark:text-white text-sm">Vista Heights Apartments</div>
+<div class="text-xs text-gray-500">GA-123-4567, Airport Residential Area</div>
+</div>
+</div>
+</td>
+<td class="px-4 py-4">
+<div class="text-sm font-medium text-gray-900 dark:text-white">Kwame Mensah</div>
+<div class="text-xs text-gray-500 font-mono">GH-ID-2023-9981</div>
+</td>
+<td class="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">Greater Accra</td>
+<td class="px-4 py-4">
+<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">
+<span class="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5"></span> Verified
+                                </span>
+</td>
+<td class="px-4 py-4 text-right">
+<button class="text-gray-400 hover:text-primary"><span class="material-symbols-outlined">more_vert</span></button>
+</td>
+</tr>
+<tr class="hover:bg-primary/5 transition-colors cursor-pointer">
+<td class="px-4 py-4"><input class="rounded border-primary/30 text-primary focus:ring-primary" type="checkbox"/></td>
+<td class="px-4 py-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
+<span class="material-symbols-outlined">home</span>
+</div>
+<div>
+<div class="font-bold text-gray-900 dark:text-white text-sm">Sunrise Villa</div>
+<div class="text-xs text-gray-500">EK-002-9811, Kumasi</div>
+</div>
+</div>
+</td>
+<td class="px-4 py-4">
+<div class="text-sm font-medium text-gray-900 dark:text-white">Abena Osei</div>
+<div class="text-xs text-gray-500 font-mono">GH-ID-2021-0042</div>
+</td>
+<td class="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">Ashanti</td>
+<td class="px-4 py-4">
+<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span> Pending
+                                </span>
+</td>
+<td class="px-4 py-4 text-right">
+<button class="text-gray-400 hover:text-primary"><span class="material-symbols-outlined">more_vert</span></button>
+</td>
+</tr>
+<tr class="hover:bg-primary/5 transition-colors cursor-pointer">
+<td class="px-4 py-4"><input class="rounded border-primary/30 text-primary focus:ring-primary" type="checkbox"/></td>
+<td class="px-4 py-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-lg bg-red-100 flex items-center justify-center text-red-600">
+<span class="material-symbols-outlined">corporate_fare</span>
+</div>
+<div>
+<div class="font-bold text-gray-900 dark:text-white text-sm">Central Plaza Offices</div>
+<div class="text-xs text-gray-500">AD-441-2090, Adabraka</div>
+</div>
+</div>
+</td>
+<td class="px-4 py-4">
+<div class="text-sm font-medium text-gray-900 dark:text-white">John Dumelo Ltd</div>
+<div class="text-xs text-gray-500 font-mono">GH-TAX-990112</div>
+</td>
+<td class="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">Greater Accra</td>
+<td class="px-4 py-4">
+<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">
+<span class="w-1.5 h-1.5 rounded-full bg-red-500 mr-1.5"></span> Flagged
+                                </span>
+</td>
+<td class="px-4 py-4 text-right">
+<button class="text-gray-400 hover:text-primary"><span class="material-symbols-outlined">more_vert</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Right Property Detail Side Panel (480px) -->
+<aside class="w-[480px] bg-white dark:bg-background-dark border-l border-primary/10 flex flex-col shadow-2xl relative z-10">
+<!-- Close Toggle -->
+<button class="absolute -left-10 top-6 bg-white border border-primary/10 border-r-0 rounded-l-lg p-2 text-primary shadow-sm">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+<div class="flex-1 overflow-y-auto">
+<!-- Property Image -->
+<div class="h-64 bg-gray-200 relative group overflow-hidden">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Modern luxury apartment complex with balconies" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCj4CLG2ZTBFP5eI1nAFmABRPvDojCjcECgF5IMW3TWNsJiUwng3HvOTJecyiWkXdVJvIIRVgHJVwMBfAEGbVb5aPTXWLD0SSNV8z5BAqwhDwIB1cls9tcplb21c4DnB2pGlZWWfkhkZNjOQNyIvXoN5KlJrOyNUVn-MPU5bpEwRjjL33HgZODU5IZZBbigGQnXSX_gT873kBJpylCV_yBU6CferSvzN1ml17ACn7ytHUyp51fptcuyTcWuJdHroI-esa8wz4dx0Hjq"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+<div class="absolute bottom-4 left-6 text-white">
+<span class="text-[10px] font-bold uppercase tracking-widest bg-primary px-2 py-1 rounded mb-2 inline-block">ID: ACC-29381-P</span>
+<h3 class="text-xl font-bold font-display leading-tight">Vista Heights Apartments</h3>
+</div>
+</div>
+<div class="p-6 space-y-8">
+<!-- Address Section -->
+<section>
+<h4 class="text-xs font-bold text-primary uppercase tracking-widest mb-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">location_on</span> Location Details
+                        </h4>
+<div class="bg-primary/5 rounded-xl p-4 border border-primary/5">
+<p class="text-sm text-gray-900 dark:text-white font-semibold">124 Independence Avenue</p>
+<p class="text-sm text-gray-600 dark:text-gray-400">Airport Residential Area, Accra</p>
+<div class="mt-3 pt-3 border-t border-primary/10 flex justify-between">
+<div class="text-xs">
+<span class="block text-gray-400 font-medium">Digital Address</span>
+<span class="text-primary font-bold">GA-123-4567</span>
+</div>
+<div class="text-xs">
+<span class="block text-gray-400 font-medium">Map Coordinates</span>
+<span class="text-gray-600 dark:text-gray-300">5.6048° N, 0.1870° W</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Owner Contact Info -->
+<section>
+<h4 class="text-xs font-bold text-primary uppercase tracking-widest mb-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">person</span> Owner Contacts
+                        </h4>
+<div class="flex items-center gap-4 mb-4">
+<div class="size-12 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">person</span>
+</div>
+<div>
+<p class="text-base font-bold text-gray-900 dark:text-white">Kwame Mensah</p>
+<p class="text-xs text-gray-500">Verified Individual Owner</p>
+</div>
+</div>
+<div class="space-y-3">
+<div class="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
+<span class="material-symbols-outlined text-primary text-lg">call</span>
+                                +233 24 567 8910
+                            </div>
+<div class="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
+<span class="material-symbols-outlined text-primary text-lg">mail</span>
+                                k.mensah@ghanalink.com
+                            </div>
+<div class="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
+<span class="material-symbols-outlined text-primary text-lg">badge</span>
+                                GHA-722100431-2
+                            </div>
+</div>
+</section>
+<!-- Financial Summary -->
+<section>
+<h4 class="text-xs font-bold text-primary uppercase tracking-widest mb-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">account_balance_wallet</span> Financial Summary
+                        </h4>
+<div class="grid grid-cols-2 gap-4">
+<div class="p-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-primary/5">
+<span class="block text-[10px] text-gray-400 font-bold uppercase">Monthly Rent</span>
+<span class="text-lg font-black text-gray-900 dark:text-white">₵4,500</span>
+</div>
+<div class="p-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-primary/5">
+<span class="block text-[10px] text-gray-400 font-bold uppercase">Rent Tax (8%)</span>
+<span class="text-lg font-black text-primary">₵360</span>
+</div>
+</div>
+<div class="mt-4 p-4 rounded-lg bg-green-50 dark:bg-green-900/10 border border-green-200 flex items-center gap-3">
+<span class="material-symbols-outlined text-green-600">verified_user</span>
+<p class="text-xs text-green-700 dark:text-green-400 leading-tight">Tax compliance status: <strong>Up to date</strong> as of October 2023.</p>
+</div>
+</section>
+</div>
+</div>
+<!-- Sticky Action Footer -->
+<div class="p-6 border-t border-primary/10 bg-white dark:bg-background-dark grid grid-cols-2 gap-3">
+<button class="flex items-center justify-center gap-2 bg-primary text-white py-3 rounded-lg text-sm font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all">
+<span class="material-symbols-outlined text-sm">schedule_send</span> Request Inspection
+                </button>
+<button class="flex items-center justify-center gap-2 border border-red-200 text-red-600 py-3 rounded-lg text-sm font-bold hover:bg-red-50 transition-all">
+<span class="material-symbols-outlined text-sm">flag</span> Flag Property
+                </button>
+</div>
+</aside>
+</main>
+</body></html>

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GRA Officer Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#006b3e",
+                        "background-light": "#f5f8f7",
+                        "background-dark": "#0f231b",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .sidebar-active {
+            background-color: #006b3e;
+            color: white !important;
+        }
+        .sidebar-active span {
+            color: white !important;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen flex">
+<!-- Sidebar -->
+<aside class="w-[280px] bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col fixed h-full z-20">
+<div class="p-6 flex items-center gap-3">
+<div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-2xl">account_balance</span>
+</div>
+<div>
+<h1 class="text-lg font-bold text-primary leading-tight">GRA Portal</h1>
+<p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Officer Dashboard</p>
+</div>
+</div>
+<nav class="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg sidebar-active transition-all group" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-sm font-semibold">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all" href="#">
+<span class="material-symbols-outlined">apartment</span>
+<span class="text-sm font-medium">Properties</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="text-sm font-medium">Contracts</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="text-sm font-medium">Payments</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all" href="#">
+<span class="material-symbols-outlined">bar_chart</span>
+<span class="text-sm font-medium">Tax Reports</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-sm font-medium">Users</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all" href="#">
+<span class="material-symbols-outlined">verified_user</span>
+<span class="text-sm font-medium">Inspections</span>
+</a>
+<div class="pt-4 border-t border-slate-100 dark:border-slate-800 mt-4">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</a>
+</div>
+</nav>
+<div class="p-4 bg-slate-50 dark:bg-slate-800/50 m-4 rounded-xl">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-slate-300 bg-cover bg-center" data-alt="Portrait of a male GRA officer in professional attire" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuClc9mzKhYCD4vVBu_cFwhdQATDYccq2jvImlaFN2HMH46fwYEJkQZiLcLaqyiPTHZjFZxkapV81JuxdsWSkRUGodMQ1TVkQZdVwD6ly-BlcCDo1IYlBrN77fPHW7HhAT4qqpL8KcRS4LBOsCmnKTws4FgEl-wUbFpKt_X5l0hyrV1aCjSjskH79holPXhNq-wIFLSHxsDnnbTbpZujRBSnH4h8qC5H0VeyJAQBC22hVOVnmmJ81LNtnBiCrHEJ1GLBUT_APnUmH458')"></div>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-bold truncate">Kwame Mensah</p>
+<p class="text-xs text-slate-500 truncate italic">Senior Officer</p>
+</div>
+<span class="material-symbols-outlined text-slate-400 cursor-pointer hover:text-primary">logout</span>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 ml-[280px] p-8">
+<!-- Top Nav -->
+<header class="flex items-center justify-between mb-8">
+<div class="flex-1 max-w-xl">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="w-full pl-11 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-sm transition-all" placeholder="Search properties, tenants, or TIN..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="relative p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 transition-colors">
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-300">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+</button>
+<div class="h-8 w-px bg-slate-200 dark:bg-slate-800"></div>
+<div class="flex items-center gap-2">
+<span class="text-xs font-medium text-slate-500 dark:text-slate-400">Last login: Today, 08:45 AM</span>
+</div>
+</div>
+</header>
+<!-- Stats Grid -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<div class="p-2 bg-primary/10 rounded-lg text-primary">
+<span class="material-symbols-outlined">apartment</span>
+</div>
+<span class="text-green-600 text-sm font-bold flex items-center gap-0.5">
+<span class="material-symbols-outlined text-sm">trending_up</span> 12%
+                    </span>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Total Properties</p>
+<h3 class="text-2xl font-bold mt-1">1,234</h3>
+</div>
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<div class="p-2 bg-primary/10 rounded-lg text-primary">
+<span class="material-symbols-outlined">assignment</span>
+</div>
+<span class="text-green-600 text-sm font-bold flex items-center gap-0.5">
+<span class="material-symbols-outlined text-sm">trending_up</span> 5%
+                    </span>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Active Contracts</p>
+<h3 class="text-2xl font-bold mt-1">892</h3>
+</div>
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<div class="p-2 bg-primary/10 rounded-lg text-primary">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+</div>
+<span class="text-green-600 text-sm font-bold flex items-center gap-0.5">
+<span class="material-symbols-outlined text-sm">trending_up</span> 8%
+                    </span>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Tax Collected</p>
+<h3 class="text-2xl font-bold mt-1">GHS 2.4M</h3>
+</div>
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<div class="p-2 bg-red-500/10 rounded-lg text-red-600">
+<span class="material-symbols-outlined">shield_moon</span>
+</div>
+<span class="text-red-600 text-sm font-bold flex items-center gap-0.5">
+<span class="material-symbols-outlined text-sm">trending_down</span> 2%
+                    </span>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Compliance Rate</p>
+<h3 class="text-2xl font-bold mt-1">78%</h3>
+</div>
+</section>
+<!-- Charts Area -->
+<section class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+<!-- Line Chart Container -->
+<div class="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center justify-between mb-6">
+<h2 class="text-lg font-bold">Tax Collection Overview</h2>
+<select class="text-xs font-medium bg-slate-50 dark:bg-slate-800 border-none rounded-lg focus:ring-1 focus:ring-primary py-1 px-3">
+<option>Last 6 Months</option>
+<option>Last Year</option>
+</select>
+</div>
+<div class="h-64 relative">
+<svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 800 240">
+<defs>
+<lineargradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#006b3e" stop-opacity="0.2"></stop>
+<stop offset="100%" stop-color="#006b3e" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<!-- Grid Lines -->
+<line stroke="#e2e8f0" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="40" y2="40"></line>
+<line stroke="#e2e8f0" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="100" y2="100"></line>
+<line stroke="#e2e8f0" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="160" y2="160"></line>
+<line stroke="#e2e8f0" stroke-dasharray="4" stroke-width="1" x1="0" x2="800" y1="220" y2="220"></line>
+<!-- Area path -->
+<path d="M0,180 L100,160 L200,120 L300,140 L400,80 L500,100 L600,60 L700,40 L800,20 V220 H0 Z" fill="url(#chartGradient)"></path>
+<!-- Line path -->
+<path d="M0,180 L100,160 L200,120 L300,140 L400,80 L500,100 L600,60 L700,40 L800,20" fill="none" stroke="#006b3e" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path>
+</svg>
+<div class="flex justify-between mt-4 px-2">
+<span class="text-xs text-slate-400 font-medium">Jan</span>
+<span class="text-xs text-slate-400 font-medium">Feb</span>
+<span class="text-xs text-slate-400 font-medium">Mar</span>
+<span class="text-xs text-slate-400 font-medium">Apr</span>
+<span class="text-xs text-slate-400 font-medium">May</span>
+<span class="text-xs text-slate-400 font-medium">Jun</span>
+<span class="text-xs text-slate-400 font-medium">Jul</span>
+</div>
+</div>
+</div>
+<!-- Regional Distribution Container -->
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<h2 class="text-lg font-bold mb-6">Regional Distribution</h2>
+<div class="flex flex-col items-center justify-center h-48 mb-8">
+<!-- Donut SVG -->
+<div class="relative size-40">
+<svg class="size-full -rotate-90" viewbox="0 0 36 36">
+<circle cx="18" cy="18" fill="none" r="15.915" stroke="#e6f4ee" stroke-width="3.5"></circle>
+<circle cx="18" cy="18" fill="none" r="15.915" stroke="#006b3e" stroke-dasharray="45 100" stroke-linecap="round" stroke-width="3.5"></circle>
+<circle cx="18" cy="18" fill="none" r="15.915" stroke="#f59e0b" stroke-dasharray="25 100" stroke-dashoffset="-45" stroke-linecap="round" stroke-width="3.5"></circle>
+<circle cx="18" cy="18" fill="none" r="15.915" stroke="#ef4444" stroke-dasharray="30 100" stroke-dashoffset="-70" stroke-linecap="round" stroke-width="3.5"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+<span class="text-2xl font-bold">10</span>
+<span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Regions</span>
+</div>
+</div>
+</div>
+<div class="space-y-3">
+<div class="flex items-center justify-between text-sm">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-primary"></span>
+<span class="text-slate-600 dark:text-slate-400">Greater Accra</span>
+</div>
+<span class="font-bold">45%</span>
+</div>
+<div class="flex items-center justify-between text-sm">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-amber-500"></span>
+<span class="text-slate-600 dark:text-slate-400">Ashanti</span>
+</div>
+<span class="font-bold">25%</span>
+</div>
+<div class="flex items-center justify-between text-sm">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-red-500"></span>
+<span class="text-slate-600 dark:text-slate-400">Western</span>
+</div>
+<span class="font-bold">30%</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Recent Payments Table -->
+<section class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+<div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+<h2 class="text-lg font-bold">Recent Tax Payments</h2>
+<button class="text-sm font-semibold text-primary hover:underline flex items-center gap-1">
+                    View All <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-slate-50 dark:bg-slate-800/50">
+<tr>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Payment ID</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Property</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Amount</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Tax (15%)</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<td class="px-6 py-4 text-sm font-medium">#TX-9482</td>
+<td class="px-6 py-4">
+<p class="text-sm font-bold">Labadi Heights, Block C</p>
+<p class="text-xs text-slate-500">Accra, Greater Accra</p>
+</td>
+<td class="px-6 py-4 text-sm font-semibold">GHS 12,400</td>
+<td class="px-6 py-4 text-sm font-semibold text-primary">GHS 1,860</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                    Paid
+                                </span>
+</td>
+<td class="px-6 py-4 text-right">
+<span class="material-symbols-outlined text-slate-400 cursor-pointer hover:text-primary">more_vert</span>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<td class="px-6 py-4 text-sm font-medium">#TX-9481</td>
+<td class="px-6 py-4">
+<p class="text-sm font-bold">Oseikrom Plaza</p>
+<p class="text-xs text-slate-500">Kumasi, Ashanti</p>
+</td>
+<td class="px-6 py-4 text-sm font-semibold">GHS 8,200</td>
+<td class="px-6 py-4 text-sm font-semibold text-primary">GHS 1,230</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
+                                    Pending
+                                </span>
+</td>
+<td class="px-6 py-4 text-right">
+<span class="material-symbols-outlined text-slate-400 cursor-pointer hover:text-primary">more_vert</span>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<td class="px-6 py-4 text-sm font-medium">#TX-9480</td>
+<td class="px-6 py-4">
+<p class="text-sm font-bold">Airport Residential Villa</p>
+<p class="text-xs text-slate-500">Accra, Greater Accra</p>
+</td>
+<td class="px-6 py-4 text-sm font-semibold">GHS 25,000</td>
+<td class="px-6 py-4 text-sm font-semibold text-primary">GHS 3,750</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                    Paid
+                                </span>
+</td>
+<td class="px-6 py-4 text-right">
+<span class="material-symbols-outlined text-slate-400 cursor-pointer hover:text-primary">more_vert</span>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<td class="px-6 py-4 text-sm font-medium">#TX-9479</td>
+<td class="px-6 py-4">
+<p class="text-sm font-bold">Takoradi Sea View Apts</p>
+<p class="text-xs text-slate-500">Takoradi, Western</p>
+</td>
+<td class="px-6 py-4 text-sm font-semibold">GHS 5,500</td>
+<td class="px-6 py-4 text-sm font-semibold text-primary">GHS 825</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                    Paid
+                                </span>
+</td>
+<td class="px-6 py-4 text-right">
+<span class="material-symbols-outlined text-slate-400 cursor-pointer hover:text-primary">more_vert</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 text-center">
+<p class="text-xs text-slate-500 font-medium tracking-wide">Showing last 4 transactions from a total of 128 this month</p>
+</div>
+</section>
+</main>
+</body></html>

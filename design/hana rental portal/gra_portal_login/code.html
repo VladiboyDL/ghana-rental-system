@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GRA Portal Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#006b3e",
+                        "background-light": "#f5f8f7",
+                        "background-dark": "#0f231b",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen flex flex-col font-display">
+<div class="flex-1 flex flex-col justify-center items-center px-4 py-12">
+<!-- Login Card -->
+<div class="w-full max-w-[440px] bg-white dark:bg-[#1a2e26] rounded-xl shadow-xl overflow-hidden p-8 border border-gray-100 dark:border-gray-800">
+<!-- Logo Section -->
+<div class="flex justify-center mb-6">
+<div class="w-16 h-16 bg-primary rounded-xl flex items-center justify-center text-white">
+<span class="material-symbols-outlined !text-4xl">account_balance</span>
+</div>
+</div>
+<!-- Title -->
+<h1 class="text-[#0c1d16] dark:text-white text-[28px] font-bold leading-tight text-center pb-8">
+                Ghana Rental Authority Portal
+            </h1>
+<!-- Login Form -->
+<form action="#" class="space-y-4">
+<!-- Email Field -->
+<div>
+<label class="flex flex-col w-full">
+<p class="text-[#0c1d16] dark:text-gray-200 text-sm font-medium leading-normal pb-2">Email Address</p>
+<input class="form-input flex w-full rounded-lg text-[#0c1d16] dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-[#cdeade] dark:border-gray-700 bg-white dark:bg-[#243a31] h-12 placeholder:text-gray-400 p-[15px] text-base font-normal" placeholder="e.g. officer@gra.gov.gh" type="email"/>
+</label>
+</div>
+<!-- Password Field -->
+<div>
+<label class="flex flex-col w-full">
+<p class="text-[#0c1d16] dark:text-gray-200 text-sm font-medium leading-normal pb-2">Password</p>
+<div class="relative flex w-full items-stretch rounded-lg">
+<input class="form-input flex w-full rounded-lg text-[#0c1d16] dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-[#cdeade] dark:border-gray-700 bg-white dark:bg-[#243a31] h-12 placeholder:text-gray-400 p-[15px] pr-10 text-base font-normal" placeholder="Enter your password" type="password"/>
+<div class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer">
+<span class="material-symbols-outlined">visibility</span>
+</div>
+</div>
+</label>
+</div>
+<!-- Remember & Forgot -->
+<div class="flex items-center justify-between py-2">
+<label class="flex items-center gap-2 cursor-pointer">
+<input class="h-4 w-4 rounded border-[#cdeade] dark:border-gray-700 text-primary focus:ring-0 focus:ring-offset-0 bg-transparent" type="checkbox"/>
+<span class="text-[#0c1d16] dark:text-gray-300 text-sm">Remember me</span>
+</label>
+<a class="text-primary hover:text-primary/80 text-sm font-medium" href="#">Forgot password?</a>
+</div>
+<!-- Sign In Button -->
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2" type="submit">
+<span>Sign In</span>
+<span class="material-symbols-outlined !text-lg">login</span>
+</button>
+</form>
+<!-- Quick Login Section -->
+<div class="mt-8 pt-8 border-t border-gray-100 dark:border-gray-800">
+<p class="text-gray-500 dark:text-gray-400 text-xs font-semibold uppercase tracking-wider text-center mb-4">
+                    Demo Account Access
+                </p>
+<div class="grid grid-cols-1 gap-2">
+<button class="flex items-center justify-between px-4 py-2.5 bg-[#F5F7FA] dark:bg-[#243a31] hover:bg-gray-200 dark:hover:bg-primary/20 rounded-lg text-[#0c1d16] dark:text-gray-200 text-sm font-medium transition-colors">
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined !text-lg text-primary">badge</span>
+                            GRA Officer
+                        </span>
+<span class="material-symbols-outlined !text-sm text-gray-400">chevron_right</span>
+</button>
+<button class="flex items-center justify-between px-4 py-2.5 bg-[#F5F7FA] dark:bg-[#243a31] hover:bg-gray-200 dark:hover:bg-primary/20 rounded-lg text-[#0c1d16] dark:text-gray-200 text-sm font-medium transition-colors">
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined !text-lg text-primary">search</span>
+                            Inspector
+                        </span>
+<span class="material-symbols-outlined !text-sm text-gray-400">chevron_right</span>
+</button>
+<button class="flex items-center justify-between px-4 py-2.5 bg-[#F5F7FA] dark:bg-[#243a31] hover:bg-gray-200 dark:hover:bg-primary/20 rounded-lg text-[#0c1d16] dark:text-gray-200 text-sm font-medium transition-colors">
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined !text-lg text-primary">admin_panel_settings</span>
+                            Administrator
+                        </span>
+<span class="material-symbols-outlined !text-sm text-gray-400">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Hero Graphic (Optional decoration) -->
+<div class="mt-12 hidden lg:block">
+<div class="w-full max-w-[960px] h-[200px] bg-center bg-no-repeat bg-cover rounded-xl opacity-20" data-alt="Abstract green geometric architectural patterns representing infrastructure" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAzJnNjRwv7aJ6LwtnYg_uH1Y8wqi0z-MRIzI8qeDyygawNN7oDexFnX_OrAS_KUieR3rbQJgchanRfQzRXZKuF0NWiDahezoOpS6hwvFoTMEPYt97nNpws6gEg0NfH6CSiAV-LOJSNW-Sb5ui4WC9Th6vhlUlx-eXWE8eOSqrG9y3VXJ4o-rmhEqG6Fw85gDJ9P2voEukF6UX_qOeRragKvvxiuxBeMO-WeJaO3uQfKG1Fbx5sUAUD-0cu6pmMR4jdDBxSRBpBRk1g");'>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<footer class="py-8 px-4 border-t border-gray-200 dark:border-gray-800">
+<div class="max-w-[960px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+<p>© 2024 Ghana Rental Authority. All rights reserved.</p>
+<div class="flex gap-6">
+<a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="hover:text-primary transition-colors" href="#">Support</a>
+</div>
+</div>
+</footer>
+</body></html>

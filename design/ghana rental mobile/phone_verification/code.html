@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Phone Verification - Ghana Rental &amp; Tax</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec92",
+                        "ghana-green": "#006B3F",
+                        "background-light": "#f5f5f5",
+                        "background-dark": "#10221a",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .otp-input:focus {
+            border-color: #006B3F !important;
+            box-shadow: 0 0 0 1px #006B3F;
+        }
+        /* Remove arrows from number inputs */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#0d1b16] dark:text-white min-h-screen flex flex-col">
+<!-- Top Navigation Bar -->
+<div class="flex items-center px-4 py-3 justify-between">
+<button class="flex items-center justify-center size-10 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors">
+<span class="material-symbols-outlined text-2xl">arrow_back_ios_new</span>
+</button>
+<h2 class="text-lg font-bold flex-1 text-center mr-10">Verification</h2>
+</div>
+<!-- Main Content Container -->
+<div class="flex-1 flex flex-col px-6 pt-8 pb-12 max-w-md mx-auto w-full">
+<!-- Header Section with Ghana Green Icon -->
+<div class="flex flex-col items-center mb-8">
+<div class="w-20 h-20 bg-ghana-green/10 flex items-center justify-center rounded-full mb-6">
+<span class="material-symbols-outlined text-ghana-green text-4xl" style="font-variation-settings: 'FILL' 1">
+                    ad_units
+                </span>
+</div>
+<h3 class="text-2xl font-bold text-center mb-3">Verify Your Phone</h3>
+<p class="text-base text-[#4a5c54] dark:text-gray-400 text-center leading-relaxed">
+                We sent a 6-digit code to <span class="font-semibold text-[#0d1b16] dark:text-white">+233 24 *** 4567</span>
+</p>
+</div>
+<!-- OTP Input Fieldset -->
+<div class="flex justify-center mb-10">
+<fieldset class="flex gap-2 sm:gap-3">
+<input autofocus="" class="otp-input w-[48px] h-[56px] text-center text-xl font-bold bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 rounded-lg transition-all focus:outline-none" maxlength="1" oninput="if(this.value.length &gt; 1) this.value = this.value.slice(0, 1); if(this.value.length == 1) this.nextElementSibling?.focus()" type="number"/>
+<input class="otp-input w-[48px] h-[56px] text-center text-xl font-bold bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 rounded-lg transition-all focus:outline-none" maxlength="1" oninput="if(this.value.length &gt; 1) this.value = this.value.slice(0, 1); if(this.value.length == 1) this.nextElementSibling?.focus()" onkeydown="if(event.key === 'Backspace' &amp;&amp; !this.value) this.previousElementSibling?.focus()" type="number"/>
+<input class="otp-input w-[48px] h-[56px] text-center text-xl font-bold bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 rounded-lg transition-all focus:outline-none" maxlength="1" oninput="if(this.value.length &gt; 1) this.value = this.value.slice(0, 1); if(this.value.length == 1) this.nextElementSibling?.focus()" onkeydown="if(event.key === 'Backspace' &amp;&amp; !this.value) this.previousElementSibling?.focus()" type="number"/>
+<input class="otp-input w-[48px] h-[56px] text-center text-xl font-bold bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 rounded-lg transition-all focus:outline-none" maxlength="1" oninput="if(this.value.length &gt; 1) this.value = this.value.slice(0, 1); if(this.value.length == 1) this.nextElementSibling?.focus()" onkeydown="if(event.key === 'Backspace' &amp;&amp; !this.value) this.previousElementSibling?.focus()" type="number"/>
+<input class="otp-input w-[48px] h-[56px] text-center text-xl font-bold bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 rounded-lg transition-all focus:outline-none" maxlength="1" oninput="if(this.value.length &gt; 1) this.value = this.value.slice(0, 1); if(this.value.length == 1) this.nextElementSibling?.focus()" onkeydown="if(event.key === 'Backspace' &amp;&amp; !this.value) this.previousElementSibling?.focus()" type="number"/>
+<input class="otp-input w-[48px] h-[56px] text-center text-xl font-bold bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 rounded-lg transition-all focus:outline-none" maxlength="1" oninput="if(this.value.length &gt; 1) this.value = this.value.slice(0, 1)" onkeydown="if(event.key === 'Backspace' &amp;&amp; !this.value) this.previousElementSibling?.focus()" type="number"/>
+</fieldset>
+</div>
+<!-- Verify Button -->
+<button class="w-full bg-primary hover:brightness-105 text-background-dark font-bold text-lg py-4 rounded-lg shadow-sm transition-all active:scale-[0.98] mb-6">
+            Verify
+        </button>
+<!-- Resend Link -->
+<div class="flex flex-col items-center gap-3">
+<p class="text-sm font-medium text-gray-500">
+                Didn't receive code? <button class="text-ghana-green dark:text-primary font-bold ml-1 opacity-50 cursor-not-allowed">Resend in 45s</button>
+</p>
+<button class="text-sm text-ghana-green dark:text-primary font-semibold hover:underline decoration-2 underline-offset-4">Change Phone Number</button>
+</div>
+<!-- Demo Info Box -->
+<div class="mt-auto pt-10">
+<div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 p-4 rounded-lg flex items-center gap-3">
+<span class="material-symbols-outlined text-blue-500 text-xl">info</span>
+<p class="text-blue-700 dark:text-blue-300 text-sm font-medium">
+                    Demo: Use code <span class="font-bold">123456</span>
+</p>
+</div>
+</div>
+</div>
+<!-- Background Pattern Decoration (Subtle) -->
+<div class="fixed top-0 right-0 -z-10 opacity-5 dark:opacity-10 pointer-events-none">
+<svg fill="none" height="200" viewbox="0 0 100 100" width="200" xmlns="http://www.w3.org/2000/svg">
+<circle class="text-ghana-green" cx="100" cy="0" fill="currentColor" r="100"></circle>
+</svg>
+</div>
+</body></html>

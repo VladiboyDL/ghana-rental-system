@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>My Properties - Urban Flats</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#006b3e",
+                        "background-light": "#f5f8f7",
+                        "background-dark": "#0f231b",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Manrope', sans-serif;
+            min-height: max(884px, 100dvh);
+        }
+        .ios-status-bar {
+            height: 44px;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden pb-24">
+<div class="ios-status-bar w-full bg-primary flex items-end justify-between px-8 pb-1">
+<span class="text-white text-xs font-bold">9:41</span>
+<div class="flex gap-1 items-center">
+<span class="material-symbols-outlined text-white text-[16px]">signal_cellular_4_bar</span>
+<span class="material-symbols-outlined text-white text-[16px]">wifi</span>
+<span class="material-symbols-outlined text-white text-[16px]">battery_full</span>
+</div>
+</div>
+<div class="flex items-center bg-primary p-4 pb-6 justify-between shadow-md">
+<div class="text-white flex size-10 shrink-0 items-center justify-center rounded-full bg-white/10">
+<span class="material-symbols-outlined">menu</span>
+</div>
+<h2 class="text-white text-lg font-bold leading-tight tracking-tight flex-1 text-center">My Properties</h2>
+<div class="flex w-12 items-center justify-end">
+<button class="flex items-center gap-1 text-white bg-white/20 px-3 py-1.5 rounded-full backdrop-blur-sm">
+<span class="material-symbols-outlined text-sm font-bold">add</span>
+<p class="text-sm font-bold leading-normal">Add</p>
+</button>
+</div>
+</div>
+<div class="flex gap-3 p-4 overflow-x-auto no-scrollbar">
+<div class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-xl bg-primary px-6 shadow-sm">
+<p class="text-white text-sm font-semibold leading-normal">All</p>
+</div>
+<div class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-xl bg-white dark:bg-primary/10 border border-primary/10 px-6 shadow-sm">
+<p class="text-primary dark:text-white text-sm font-medium leading-normal">Active</p>
+</div>
+<div class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-xl bg-white dark:bg-primary/10 border border-primary/10 px-6 shadow-sm">
+<p class="text-primary dark:text-white text-sm font-medium leading-normal">Pending</p>
+</div>
+<div class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-xl bg-white dark:bg-primary/10 border border-primary/10 px-6 shadow-sm">
+<p class="text-primary dark:text-white text-sm font-medium leading-normal">Drafts</p>
+</div>
+</div>
+<div class="flex flex-col gap-4 px-4">
+<div class="p-0 @container">
+<div class="flex flex-col items-stretch justify-start rounded-xl overflow-hidden shadow-sm bg-white dark:bg-[#1a2e26]">
+<div class="relative w-full aspect-[16/9] bg-center bg-no-repeat bg-cover" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuACviB3OgNPd3T0Gz0Smmt285rVr0htX_Xg7aFYK2p_aL27VHA5onZrffV2pCHKKHsgzNzoc-YSJ_rHqsbqbd2ZWFJM_AkCmrcGGh_zJS_mLhD8JpFLeTJj_llEEdVxkp3jAK8ZnC2Jo__zkLkYMwhFlk9WF_PoEZAG_qqXodwXffYnoYFbsFlK0FPEqqvTOdEIHOQHP_7PUtI9FAfDBGlS20BS3tldh78fYququdnEf10Zm5MjIsR_Vmm4qxZ8nyLjXrSqs84YtJUq");'>
+<div class="absolute top-3 left-3 flex gap-2">
+<span class="bg-primary text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Available</span>
+<span class="bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px] font-bold">verified</span> Verified
+                            </span>
+</div>
+</div>
+<div class="flex w-full flex-col gap-2 p-4">
+<div class="flex justify-between items-start">
+<h3 class="text-[#0c1d16] dark:text-white text-xl font-extrabold leading-tight">2-Bedroom Flat</h3>
+<p class="text-primary font-bold text-lg">GHS 2,800<span class="text-xs font-normal text-slate-500">/mo</span></p>
+</div>
+<div class="flex items-center gap-1 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<p class="text-sm font-medium">Osu, Accra</p>
+</div>
+<div class="flex items-center gap-4 mt-1">
+<div class="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined text-lg">bed</span>
+<span class="text-sm font-semibold">2 Bed</span>
+</div>
+<div class="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined text-lg">bathtub</span>
+<span class="text-sm font-semibold">1 Bath</span>
+</div>
+<div class="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined text-lg">apartment</span>
+<span class="text-sm font-semibold">Unit 4B</span>
+</div>
+</div>
+<div class="mt-4 flex gap-2">
+<button class="flex-1 cursor-pointer items-center justify-center rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold">
+                                Manage Property
+                            </button>
+<button class="flex size-10 items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700">
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-300">more_horiz</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="p-0 @container">
+<div class="flex flex-col items-stretch justify-start rounded-xl overflow-hidden shadow-sm bg-white dark:bg-[#1a2e26]">
+<div class="relative w-full aspect-[16/9] bg-center bg-no-repeat bg-cover" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB3078ySTbheHWoRnKeE_U-g9aG1sKHsrWT42tpij3eF3ptj67O_2BEaZxfaefgXmNa5VqkuoYn4FzTIi7SrQmVRFtvogzNQBHAJBpLEuOlXoPuXVrOsg_g93RTng-PQ1KLo6fEMDwQnDy1ViqTvUl4qoXW8e03u2ef6YelYX_Z3x0cG9fldtWnhxgoD-VC8W7GQjY8cghfzwc_EUjimtAWgT5sOhOs13tyV-gGQZkBejj_C0pSQyPznZg1XCZvoYhpJ7h3WcfZC4Xd");'>
+<div class="absolute top-3 left-3 flex gap-2">
+<span class="bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Occupied</span>
+<span class="bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px] font-bold">verified</span> Verified
+                            </span>
+</div>
+</div>
+<div class="flex w-full flex-col gap-2 p-4">
+<div class="flex justify-between items-start">
+<h3 class="text-[#0c1d16] dark:text-white text-xl font-extrabold leading-tight">Executive Apartment</h3>
+<p class="text-primary font-bold text-lg">GHS 4,500<span class="text-xs font-normal text-slate-500">/mo</span></p>
+</div>
+<div class="flex items-center gap-1 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<p class="text-sm font-medium">Airport Residential Area, Accra</p>
+</div>
+<div class="flex items-center gap-4 mt-1">
+<div class="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined text-lg">bed</span>
+<span class="text-sm font-semibold">3 Bed</span>
+</div>
+<div class="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined text-lg">bathtub</span>
+<span class="text-sm font-semibold">2 Bath</span>
+</div>
+</div>
+<div class="mt-4 flex gap-2">
+<button class="flex-1 cursor-pointer items-center justify-center rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold">
+                                Manage Property
+                            </button>
+<button class="flex size-10 items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700">
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-300">more_horiz</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="p-0 @container">
+<div class="flex flex-col items-stretch justify-start rounded-xl overflow-hidden shadow-sm bg-white dark:bg-[#1a2e26] border-2 border-dashed border-slate-200 dark:border-slate-800">
+<div class="relative w-full aspect-[16/9] bg-center bg-no-repeat bg-cover grayscale" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDv92Fc6oPKMg47OTZ093zHDOUTQiv4PYl_w1gsz1C7PuFJ5mBsOp4qjuX1x72TcwaL76e2lqJeCb2svy1cX8zv_KOVwdxl_grWePItBybek5EWAc314gebc6T6EKiH-5o4-ZwELyJvoUyJktUDWerNj5i5nrEbOehYfL-SANdoXCNREpdFy4qifwvCVayCHjsv0XcA0TNY88DUGA7MstZ0QUiX6pn-sNsyxXXRf59YNIcF6Y37_C7b6NMZTagZKfcYXwlkc1EiQ7xR");'>
+<div class="absolute inset-0 bg-black/40 flex items-center justify-center">
+<span class="bg-white/90 text-slate-900 text-xs font-bold px-4 py-2 rounded-full flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">schedule</span> Pending Verification
+                            </span>
+</div>
+</div>
+<div class="flex w-full flex-col gap-2 p-4">
+<div class="flex justify-between items-start">
+<h3 class="text-[#0c1d16] dark:text-white text-xl font-extrabold leading-tight">3-Bedroom Flat</h3>
+<p class="text-slate-400 font-bold text-lg">GHS 3,200<span class="text-xs font-normal">/mo</span></p>
+</div>
+<div class="flex items-center gap-1 text-slate-500">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<p class="text-sm font-medium">East Legon Hills, Accra</p>
+</div>
+<div class="mt-4 flex gap-2">
+<button class="flex-1 cursor-pointer items-center justify-center rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold">
+                                Complete Details
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="fixed bottom-0 left-0 right-0 h-20 bg-white/95 dark:bg-background-dark/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 flex justify-around items-center px-4 pb-4">
+<div class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined font-bold">home</span>
+<span class="text-[10px] font-bold">Properties</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined">description</span>
+<span class="text-[10px] font-medium">Contracts</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined">payments</span>
+<span class="text-[10px] font-medium">Payments</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-medium">Profile</span>
+</div>
+</div>
+</div>
+
+</body></html>

@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Compliance &amp; Enforcement Report - GRA Portal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#006b3e",
+                        "alert-red": "#CE1126",
+                        "background-light": "#f5f8f7",
+                        "background-dark": "#0f231b",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100">
+<div class="flex h-screen overflow-hidden">
+<!-- Sidebar -->
+<aside class="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col justify-between p-4">
+<div class="flex flex-col gap-8">
+<div class="flex items-center gap-3 px-2">
+<div class="bg-primary text-white rounded-lg p-1.5 flex items-center justify-center">
+<span class="material-symbols-outlined text-2xl">account_balance</span>
+</div>
+<div class="flex flex-col">
+<h1 class="text-slate-900 dark:text-white text-base font-bold leading-none">GRA Portal</h1>
+<p class="text-primary text-xs font-medium uppercase tracking-wider mt-1">Officer Panel</p>
+</div>
+</div>
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/5" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">description</span>
+<span class="text-sm font-medium">Compliance Reports</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/5" href="#">
+<span class="material-symbols-outlined">domain</span>
+<span class="text-sm font-medium">Properties</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/5" href="#">
+<span class="material-symbols-outlined">search_check</span>
+<span class="text-sm font-medium">Inspections</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-primary/5" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</a>
+</nav>
+</div>
+<button class="flex items-center justify-center gap-2 bg-primary text-white rounded-lg py-2.5 px-4 font-bold text-sm transition-opacity hover:opacity-90">
+<span class="material-symbols-outlined text-sm">add_circle</span>
+<span>New Inspection</span>
+</button>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 overflow-y-auto flex flex-col">
+<!-- Header -->
+<header class="h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-8 flex items-center justify-between sticky top-0 z-10">
+<div class="flex items-center gap-8">
+<h2 class="text-slate-900 dark:text-white text-lg font-bold">Ghana Rental Authority</h2>
+<nav class="hidden lg:flex items-center gap-6">
+<a class="text-primary text-sm font-semibold border-b-2 border-primary py-5" href="#">Overview</a>
+<a class="text-slate-500 text-sm font-medium hover:text-slate-700 dark:hover:text-slate-300" href="#">Regional</a>
+<a class="text-slate-500 text-sm font-medium hover:text-slate-700 dark:hover:text-slate-300" href="#">Enforcement</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
+<input class="w-full bg-slate-100 dark:bg-slate-800 border-none rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary" placeholder="Search report ID..." type="text"/>
+</div>
+<button class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="h-8 w-[1px] bg-slate-200 dark:bg-slate-700 mx-1"></div>
+<div class="flex items-center gap-3">
+<div class="text-right">
+<p class="text-xs font-bold text-slate-900 dark:text-white">Officer K. Mensah</p>
+<p class="text-[10px] text-slate-500">Accra District</p>
+</div>
+<div class="w-10 h-10 rounded-full bg-slate-200 border-2 border-white dark:border-slate-800 bg-cover bg-center" data-alt="Avatar of government official" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBKygJUNpmX0gLvlH3WN3IkJDwAC3sa861xLcwWaOUdgLpkwcSZWaWukc3o8Gn6G9fRdLcNVBuOgUt41N4yuXBNfQ3PShHa3AATuZvGbw4sfVazk40N_NLnTt6RWdVRQA0KvIs3r1PCsbmM-OepEOwiPJeBcQqIJZn39QjuoseAkEH6Ji4UFI56IbkqF50NkIQ0KGcBYdRLW4ransRba3Xf0dRyY11FhUU5Vo_esI4dvq3yPdnAfuxJuEMNVf8bMTg1tLX3JD-TeEmX')"></div>
+</div>
+</div>
+</header>
+<div class="p-8 space-y-8 max-w-[1400px] mx-auto w-full">
+<!-- Page Title -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h1 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Compliance &amp; Enforcement Report</h1>
+<p class="text-slate-500 mt-1">Real-time monitoring of property tax and rental regulatory adherence across Ghana.</p>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-lg text-sm font-bold shadow-sm">
+<span class="material-symbols-outlined text-lg">filter_list</span>
+                            Filter Data
+                        </button>
+<button class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md">
+<span class="material-symbols-outlined text-lg">download</span>
+                            Export Data
+                        </button>
+</div>
+</div>
+<!-- Stats Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<span class="text-slate-500 font-medium">Compliant</span>
+<span class="bg-primary/10 text-primary p-1.5 rounded-lg">
+<span class="material-symbols-outlined text-xl">check_circle</span>
+</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-black text-slate-900 dark:text-white">78%</span>
+<span class="text-primary text-sm font-bold">+2.4%</span>
+</div>
+<div class="mt-4 w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 78%"></div>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<span class="text-slate-500 font-medium">At Risk</span>
+<span class="bg-amber-100 text-amber-600 p-1.5 rounded-lg">
+<span class="material-symbols-outlined text-xl">warning</span>
+</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-black text-slate-900 dark:text-white">12%</span>
+<span class="text-alert-red text-sm font-bold">-1.2%</span>
+</div>
+<div class="mt-4 w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
+<div class="bg-amber-500 h-full rounded-full" style="width: 12%"></div>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<span class="text-slate-500 font-medium">Non-Compliant</span>
+<span class="bg-red-100 text-alert-red p-1.5 rounded-lg">
+<span class="material-symbols-outlined text-xl">error</span>
+</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-black text-slate-900 dark:text-white">7%</span>
+<span class="text-alert-red text-sm font-bold">-0.5%</span>
+</div>
+<div class="mt-4 w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
+<div class="bg-alert-red h-full rounded-full" style="width: 7%"></div>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<span class="text-slate-500 font-medium">Under Review</span>
+<span class="bg-blue-100 text-blue-600 p-1.5 rounded-lg">
+<span class="material-symbols-outlined text-xl">pending_actions</span>
+</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-black text-slate-900 dark:text-white">3%</span>
+<span class="text-slate-400 text-sm font-bold">0%</span>
+</div>
+<div class="mt-4 w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
+<div class="bg-blue-600 h-full rounded-full" style="width: 3%"></div>
+</div>
+</div>
+</div>
+<!-- Regional Chart Section -->
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+<div class="flex items-center justify-between mb-8">
+<div>
+<h3 class="text-lg font-bold text-slate-900 dark:text-white">Compliance by Region</h3>
+<p class="text-sm text-slate-500">Cross-regional comparison of regulatory adherence scores.</p>
+</div>
+<select class="text-xs font-bold bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg">
+<option>Last 30 Days</option>
+<option>Quarterly</option>
+<option>Yearly</option>
+</select>
+</div>
+<div class="space-y-5">
+<div class="flex flex-col gap-2">
+<div class="flex justify-between text-sm">
+<span class="font-semibold text-slate-700 dark:text-slate-300">Greater Accra</span>
+<span class="font-bold text-slate-900 dark:text-white">85%</span>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-4 overflow-hidden">
+<div class="bg-primary h-full rounded-full flex items-center px-2" style="width: 85%">
+<div class="h-1 w-full bg-white/20 rounded-full"></div>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex justify-between text-sm">
+<span class="font-semibold text-slate-700 dark:text-slate-300">Ashanti Region</span>
+<span class="font-bold text-slate-900 dark:text-white">80%</span>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-4 overflow-hidden">
+<div class="bg-primary/90 h-full rounded-full flex items-center px-2" style="width: 80%">
+<div class="h-1 w-full bg-white/20 rounded-full"></div>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex justify-between text-sm">
+<span class="font-semibold text-slate-700 dark:text-slate-300">Western Region</span>
+<span class="font-bold text-slate-900 dark:text-white">72%</span>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-4 overflow-hidden">
+<div class="bg-primary/80 h-full rounded-full flex items-center px-2" style="width: 72%">
+<div class="h-1 w-full bg-white/20 rounded-full"></div>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex justify-between text-sm">
+<span class="font-semibold text-slate-700 dark:text-slate-300">Central Region</span>
+<span class="font-bold text-slate-900 dark:text-white">65%</span>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-4 overflow-hidden">
+<div class="bg-primary/70 h-full rounded-full flex items-center px-2" style="width: 65%">
+<div class="h-1 w-full bg-white/20 rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Actionable Table Section -->
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+<div class="p-6 border-b border-slate-100 dark:border-slate-800">
+<h3 class="text-lg font-bold text-slate-900 dark:text-white">Non-Compliant Properties Requiring Action</h3>
+<p class="text-sm text-slate-500">List of properties failing to meet tax or regulatory requirements.</p>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead class="bg-slate-50 dark:bg-slate-800/50">
+<tr>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Property Name</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Issue Type</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Days Overdue</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4">
+<div class="font-bold text-slate-900 dark:text-white">Osu Heritage Estates</div>
+<div class="text-xs text-slate-500">Accra, GA-124-5542</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-alert-red border border-red-200">
+                                            Unreported Income
+                                        </span>
+</td>
+<td class="px-6 py-4 text-center">
+<div class="text-sm font-black text-alert-red">45 days</div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2">
+<button class="px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded">View</button>
+<button class="px-3 py-1.5 text-xs font-bold bg-primary text-white rounded shadow-sm">Flag/Enforce</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4">
+<div class="font-bold text-slate-900 dark:text-white">Kumasi Central Heights</div>
+<div class="text-xs text-slate-500">Kumasi, AK-002-3112</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 border border-amber-200">
+                                            Missing Contracts
+                                        </span>
+</td>
+<td class="px-6 py-4 text-center">
+<div class="text-sm font-black text-amber-600">12 days</div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2">
+<button class="px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded">View</button>
+<button class="px-3 py-1.5 text-xs font-bold bg-primary text-white rounded shadow-sm">Flag/Enforce</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4">
+<div class="font-bold text-slate-900 dark:text-white">Takoradi Harbour View</div>
+<div class="text-xs text-slate-500">Western, WR-490-1002</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-alert-red border border-red-200">
+                                            Unreported Income
+                                        </span>
+</td>
+<td class="px-6 py-4 text-center">
+<div class="text-sm font-black text-alert-red">62 days</div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2">
+<button class="px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded">View</button>
+<button class="px-3 py-1.5 text-xs font-bold bg-primary text-white rounded shadow-sm">Flag/Enforce</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4">
+<div class="font-bold text-slate-900 dark:text-white">Cape Coast Villas</div>
+<div class="text-xs text-slate-500">Central, CR-051-9980</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 border border-blue-200">
+                                            Expired License
+                                        </span>
+</td>
+<td class="px-6 py-4 text-center">
+<div class="text-sm font-black text-blue-600">8 days</div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2">
+<button class="px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded">View</button>
+<button class="px-3 py-1.5 text-xs font-bold bg-primary text-white rounded shadow-sm">Flag/Enforce</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-sm">
+<span class="text-slate-500 font-medium">Showing 4 of 128 results</span>
+<div class="flex items-center gap-2">
+<button class="p-1 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<span class="font-bold px-2">1</span>
+<button class="p-1 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

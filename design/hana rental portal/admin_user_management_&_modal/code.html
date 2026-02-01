@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GRA | Admin User Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#006b3e",
+                        "background-light": "#f5f8f7",
+                        "background-dark": "#0f231b",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#0c1d16] dark:text-white min-h-screen">
+<!-- Top Navigation Bar -->
+<header class="sticky top-0 z-40 w-full bg-white dark:bg-background-dark border-b border-[#e6f4ee] dark:border-primary/20">
+<div class="max-w-[1440px] mx-auto px-6 h-16 flex items-center justify-between">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3">
+<div class="bg-primary p-1.5 rounded-lg text-white">
+<span class="material-symbols-outlined text-2xl">account_balance</span>
+</div>
+<h1 class="text-lg font-bold tracking-tight">Ghana Rental Authority</h1>
+</div>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-sm font-medium opacity-60 hover:opacity-100 transition-opacity" href="#">Dashboard</a>
+<a class="text-sm font-medium text-primary border-b-2 border-primary py-5" href="#">User Management</a>
+<a class="text-sm font-medium opacity-60 hover:opacity-100 transition-opacity" href="#">Inspections</a>
+<a class="text-sm font-medium opacity-60 hover:opacity-100 transition-opacity" href="#">Reports</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden sm:flex items-center gap-2 bg-[#e6f4ee] dark:bg-primary/10 px-3 py-1.5 rounded-lg">
+<span class="material-symbols-outlined text-primary text-sm">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm placeholder:text-primary/60 w-32 lg:w-48" placeholder="Global search..." type="text"/>
+</div>
+<div class="w-10 h-10 rounded-full bg-cover bg-center border-2 border-primary/20" data-alt="Admin user profile picture" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA93vdprttET5dweT63HRbKEZkLn1XVlFyNSu1sGPBi4b2UcM4sDcGdHsl9xUl1A0n84TTYaV_odx6OVYSsYncDZLJykYs0Rw1cbJZL_pReXkNfpV9opn25fNdIg7ljANjy2O16Yh8YGoyahYBNpjp07yNIEPWaOLMVH_aHVScPErP2Ttl58se5mBjNo9MhR6TVKTuCNvj4vuE6oBmM645a8fKk3dXmJWQrLJs8JvklaLidhZ8HI-LRLr9VXqWpnQrmQA15359i0YcU');"></div>
+</div>
+</div>
+</header>
+<main class="max-w-[1440px] mx-auto px-6 py-8">
+<!-- Page Heading -->
+<div class="flex flex-wrap items-end justify-between gap-4 mb-8">
+<div class="flex flex-col gap-1">
+<h2 class="text-3xl font-black tracking-tight">User Management</h2>
+<p class="text-[#45a17a] dark:text-[#45a17a]/80 font-medium">Manage and monitor system access for GRA personnel across all regions.</p>
+</div>
+<button class="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-lg font-bold text-sm shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all">
+<span class="material-symbols-outlined">person_add</span>
+<span>Add New User</span>
+</button>
+</div>
+<!-- Stats Row -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+<div class="bg-white dark:bg-background-dark/50 p-6 rounded-xl border border-[#cdeade] dark:border-primary/20">
+<p class="text-sm font-medium opacity-70 mb-1">Total Users</p>
+<div class="flex items-center justify-between">
+<p class="text-3xl font-black">1,240</p>
+<span class="material-symbols-outlined text-primary bg-primary/10 p-2 rounded-lg">group</span>
+</div>
+</div>
+<div class="bg-white dark:bg-background-dark/50 p-6 rounded-xl border border-[#cdeade] dark:border-primary/20">
+<p class="text-sm font-medium opacity-70 mb-1">Officers</p>
+<div class="flex items-center justify-between">
+<p class="text-3xl font-black">850</p>
+<span class="material-symbols-outlined text-primary bg-primary/10 p-2 rounded-lg">badge</span>
+</div>
+</div>
+<div class="bg-white dark:bg-background-dark/50 p-6 rounded-xl border border-[#cdeade] dark:border-primary/20">
+<p class="text-sm font-medium opacity-70 mb-1">Inspectors</p>
+<div class="flex items-center justify-between">
+<p class="text-3xl font-black">320</p>
+<span class="material-symbols-outlined text-primary bg-primary/10 p-2 rounded-lg">fact_check</span>
+</div>
+</div>
+<div class="bg-white dark:bg-background-dark/50 p-6 rounded-xl border border-[#cdeade] dark:border-primary/20">
+<p class="text-sm font-medium opacity-70 mb-1">Admins</p>
+<div class="flex items-center justify-between">
+<p class="text-3xl font-black">70</p>
+<span class="material-symbols-outlined text-primary bg-primary/10 p-2 rounded-lg">admin_panel_settings</span>
+</div>
+</div>
+</div>
+<!-- Filter Bar -->
+<div class="bg-white dark:bg-background-dark/50 p-4 rounded-xl border border-[#cdeade] dark:border-primary/20 flex flex-wrap gap-3 items-center mb-6">
+<div class="flex-1 min-w-[240px]">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-primary/60">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-background-light dark:bg-background-dark rounded-lg border-none focus:ring-2 focus:ring-primary/30 text-sm" placeholder="Search by name, email or ID..." type="text"/>
+</div>
+</div>
+<div class="flex gap-3 flex-wrap">
+<button class="flex items-center gap-2 px-4 py-2 bg-background-light dark:bg-background-dark rounded-lg text-sm font-medium border border-[#cdeade] dark:border-primary/20">
+<span>Role: All Roles</span>
+<span class="material-symbols-outlined text-sm">expand_more</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 bg-background-light dark:bg-background-dark rounded-lg text-sm font-medium border border-[#cdeade] dark:border-primary/20">
+<span>Status: Active</span>
+<span class="material-symbols-outlined text-sm">expand_more</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 bg-background-light dark:bg-background-dark rounded-lg text-sm font-medium border border-[#cdeade] dark:border-primary/20">
+<span>Region: All Regions</span>
+<span class="material-symbols-outlined text-sm">expand_more</span>
+</button>
+</div>
+</div>
+<!-- Table Container -->
+<div class="bg-white dark:bg-background-dark/50 rounded-xl border border-[#cdeade] dark:border-primary/20 overflow-hidden shadow-sm">
+<div class="overflow-x-auto overflow-y-hidden">
+<table class="w-full text-left border-collapse">
+<thead class="bg-background-light/50 dark:bg-primary/5">
+<tr>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-primary/70">User Details</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-primary/70">Role</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-primary/70">Region</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-primary/70">Status</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-primary/70">Last Login</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-primary/70 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#cdeade] dark:divide-primary/10">
+<tr class="hover:bg-primary/5 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">KM</div>
+<div class="flex flex-col">
+<span class="text-sm font-bold">Kwame Mensah</span>
+<span class="text-xs opacity-60">kwame@gra.gov.gh</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-sm font-medium">Officer</td>
+<td class="px-6 py-4 text-sm">Greater Accra</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#e6f4ee] text-primary">
+                                    Active
+                                </span>
+</td>
+<td class="px-6 py-4 text-xs opacity-60">Today, 09:42 AM</td>
+<td class="px-6 py-4 text-right">
+<button class="p-1 hover:bg-[#e6f4ee] dark:hover:bg-primary/20 rounded text-[#45a17a]">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-primary/5 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-cover bg-center" data-alt="Abena Osei portrait" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCw6LRsEsMHL2hxN57Y4W2tGPoV0ssDPYV6S3RFOrAcEuiqr1rQe7UcdTxjfByINc0Af4CPYh0kBya9vaR1fbNTUbBAPmuEZ_vuvg1mma8MHLqN0XTnAlLIjho2X7nkY-wbwAzM-edljIwawVIZSwts5Bf-v91x4lgY0aN55l34QpHkHmFsO_5D2M6JEYL-vNlgDP7BK01woHd0mMDDYYZKq-JmV98dPilzA-RY-nTRpkjexFkccQcI1nrE3YXUaP98t3Jj_mrgkWDS');"></div>
+<div class="flex flex-col">
+<span class="text-sm font-bold">Abena Osei</span>
+<span class="text-xs opacity-60">abena@gra.gov.gh</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-sm font-medium">Inspector</td>
+<td class="px-6 py-4 text-sm">Ashanti</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#e6f4ee] text-primary">
+                                    Active
+                                </span>
+</td>
+<td class="px-6 py-4 text-xs opacity-60">Yesterday, 04:15 PM</td>
+<td class="px-6 py-4 text-right">
+<button class="p-1 hover:bg-[#e6f4ee] dark:hover:bg-primary/20 rounded text-[#45a17a]">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-primary/5 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">KB</div>
+<div class="flex flex-col">
+<span class="text-sm font-bold">Kofi Boateng</span>
+<span class="text-xs opacity-60">kofi@gra.gov.gh</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-sm font-medium">Admin</td>
+<td class="px-6 py-4 text-sm">Western</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#e6f4ee] text-primary">
+                                    Active
+                                </span>
+</td>
+<td class="px-6 py-4 text-xs opacity-60">Oct 24, 2023</td>
+<td class="px-6 py-4 text-right">
+<button class="p-1 hover:bg-[#e6f4ee] dark:hover:bg-primary/20 rounded text-[#45a17a]">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-primary/5 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">YA</div>
+<div class="flex flex-col">
+<span class="text-sm font-bold">Yaw Antwi</span>
+<span class="text-xs opacity-60">yaw@gra.gov.gh</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-sm font-medium">Officer</td>
+<td class="px-6 py-4 text-sm">Central</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400">
+                                    Inactive
+                                </span>
+</td>
+<td class="px-6 py-4 text-xs opacity-60">Sep 12, 2023</td>
+<td class="px-6 py-4 text-right">
+<button class="p-1 hover:bg-[#e6f4ee] dark:hover:bg-primary/20 rounded text-[#45a17a]">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<tr class="border-b-0 group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-cover bg-center" data-alt="Esi Manu portrait" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAfsLhq4bd7VIgcXc3ifejIrkP4lMBRUrC5uu6z75Rb7RZJY72GE4GLOhKyiDrQY4NnhboLfebEkO4TbFjCDKq9CyX0_TJ-6e7HQIQZGMZ7ltzPSjlA36yPExwJf-jppwSKyIixvHb4InpT5_ZLJluaPvkaXoAmuLzxUodou8y_F04Hq__9l5NDpBAgweYBHcXf-td3_enUvibWxpuR9De2g8lnsvOLYQdO8QmPO9PPxb9Z2uuj4lByYJsp3YNjrcWUytl28pSvSq-c');"></div>
+<div class="flex flex-col">
+<span class="text-sm font-bold">Esi Manu</span>
+<span class="text-xs opacity-60">esi@gra.gov.gh</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-sm font-medium">Inspector</td>
+<td class="px-6 py-4 text-sm">Eastern</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#e6f4ee] text-primary">
+                                    Active
+                                </span>
+</td>
+<td class="px-6 py-4 text-xs opacity-60">Today, 07:12 AM</td>
+<td class="px-6 py-4 text-right">
+<button class="p-1 hover:bg-[#e6f4ee] dark:hover:bg-primary/20 rounded text-[#45a17a]">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination-like footer -->
+<div class="px-6 py-4 bg-background-light/30 dark:bg-primary/5 flex items-center justify-between border-t border-[#cdeade] dark:border-primary/10">
+<span class="text-xs font-medium opacity-60">Showing 1 to 5 of 1,240 users</span>
+<div class="flex gap-2">
+<button class="px-3 py-1 bg-white dark:bg-background-dark border border-[#cdeade] dark:border-primary/20 rounded text-xs font-bold opacity-50 cursor-not-allowed">Previous</button>
+<button class="px-3 py-1 bg-white dark:bg-background-dark border border-[#cdeade] dark:border-primary/20 rounded text-xs font-bold hover:bg-primary/10 transition-colors">Next</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Modal Overlay -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+<!-- Backdrop -->
+<div class="absolute inset-0 bg-[#0c1d16]/60 backdrop-blur-sm"></div>
+<!-- Modal Content -->
+<div class="relative bg-white dark:bg-background-dark w-full max-w-[560px] rounded-2xl shadow-2xl overflow-hidden border border-white/20">
+<!-- Modal Header -->
+<div class="px-8 py-6 border-b border-[#e6f4ee] dark:border-primary/20 flex items-center justify-between bg-primary/5">
+<div>
+<h3 class="text-xl font-black tracking-tight">Add New User</h3>
+<p class="text-sm opacity-60">Register a new official onto the GRA portal</p>
+</div>
+<button class="text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Modal Body (Form) -->
+<div class="px-8 py-8">
+<form class="space-y-6">
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-2">
+<label class="text-xs font-bold uppercase tracking-wider text-primary">First Name</label>
+<input class="w-full px-4 py-2.5 rounded-lg border-[#cdeade] dark:border-primary/20 dark:bg-background-dark/50 focus:ring-2 focus:ring-primary/30 text-sm" placeholder="e.g. Samuel" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="text-xs font-bold uppercase tracking-wider text-primary">Last Name</label>
+<input class="w-full px-4 py-2.5 rounded-lg border-[#cdeade] dark:border-primary/20 dark:bg-background-dark/50 focus:ring-2 focus:ring-primary/30 text-sm" placeholder="e.g. Mensah" type="text"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-xs font-bold uppercase tracking-wider text-primary">Email Address</label>
+<input class="w-full px-4 py-2.5 rounded-lg border-[#cdeade] dark:border-primary/20 dark:bg-background-dark/50 focus:ring-2 focus:ring-primary/30 text-sm" placeholder="samuel.mensah@gra.gov.gh" type="email"/>
+</div>
+<div class="space-y-2">
+<label class="text-xs font-bold uppercase tracking-wider text-primary">Phone Number</label>
+<input class="w-full px-4 py-2.5 rounded-lg border-[#cdeade] dark:border-primary/20 dark:bg-background-dark/50 focus:ring-2 focus:ring-primary/30 text-sm" placeholder="+233 24 XXX XXXX" type="tel"/>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-2 text-sm">
+<label class="text-xs font-bold uppercase tracking-wider text-primary">System Role</label>
+<select class="w-full px-4 py-2.5 rounded-lg border-[#cdeade] dark:border-primary/20 dark:bg-background-dark/50 focus:ring-2 focus:ring-primary/30 text-sm appearance-none">
+<option>Select Role</option>
+<option>Officer</option>
+<option>Inspector</option>
+<option>System Admin</option>
+</select>
+</div>
+<div class="space-y-2 text-sm">
+<label class="text-xs font-bold uppercase tracking-wider text-primary">Assigned Region</label>
+<select class="w-full px-4 py-2.5 rounded-lg border-[#cdeade] dark:border-primary/20 dark:bg-background-dark/50 focus:ring-2 focus:ring-primary/30 text-sm appearance-none">
+<option>Select Region</option>
+<option>Greater Accra</option>
+<option>Ashanti</option>
+<option>Western</option>
+<option>Northern</option>
+</select>
+</div>
+</div>
+</form>
+</div>
+<!-- Modal Footer -->
+<div class="px-8 py-6 bg-background-light/50 dark:bg-primary/5 border-t border-[#e6f4ee] dark:border-primary/20 flex gap-3 justify-end">
+<button class="px-6 py-2.5 rounded-lg text-sm font-bold border border-[#cdeade] dark:border-primary/20 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+                    Cancel
+                </button>
+<button class="px-6 py-2.5 rounded-lg text-sm font-bold bg-primary text-white shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all">
+                    Create User
+                </button>
+</div>
+</div>
+</div>
+</body></html>

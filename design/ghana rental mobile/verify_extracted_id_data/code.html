@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Verify Extracted ID Data</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#11d483",
+                        "background-light": "#f6f8f7",
+                        "background-dark": "#10221a",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: "Public Sans", sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-[#0d1b16] dark:text-white transition-colors duration-200">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden max-w-[430px] mx-auto bg-white dark:bg-[#10221a] shadow-2xl">
+<!-- Top Navigation -->
+<div class="flex items-center bg-white dark:bg-[#10221a] p-4 pb-2 justify-between sticky top-0 z-10 border-b border-gray-100 dark:border-gray-800">
+<div class="text-[#0d1b16] dark:text-white flex size-12 shrink-0 items-center cursor-pointer">
+<span class="material-symbols-outlined">arrow_back_ios</span>
+</div>
+<h2 class="text-[#0d1b16] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">Verify ID</h2>
+</div>
+<div class="flex-1 overflow-y-auto">
+<!-- Scanned Image Preview -->
+<div class="@container">
+<div class="px-4 py-4">
+<p class="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">Captured Document</p>
+<div class="w-full bg-center bg-no-repeat bg-cover flex flex-col justify-end overflow-hidden bg-gray-200 dark:bg-gray-800 rounded-xl min-h-[220px] shadow-sm border-2 border-primary/30" data-alt="A clear photo of a Ghana Identity Card on a flat surface" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA6624A9HabM_AEI09VXRtr6LaqxYNEcF1BTMv0EWyTFhgHFhxokPIskWvPlP2npZqclVpeuGhtYCpDkS50_58g0JMNg8DMNcptzP2dQXk-iBFpl10fT-gbgVi51UqhJLmCwDlOM8fHXjK9nlqQkK1S0ColbWD_EeQIDMpcs3AVKn-gjvlQ2lmETP2-b6IICO8InZ_Sth2V0UUS5O7MhdECgqtXLsM633EKEHjmIMODdB8Ayiab6uBTmZtZAqic1Q6gxJZswrS1ECx7");'>
+<div class="bg-gradient-to-t from-black/60 to-transparent p-4">
+<div class="flex items-center gap-2 text-white">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+<span class="text-xs font-medium uppercase">Quality Check Passed</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Confidence Bar -->
+<div class="px-4 mb-4">
+<div class="bg-primary/10 dark:bg-primary/5 rounded-xl p-4 flex flex-col gap-2 border border-primary/20">
+<div class="flex justify-between items-center">
+<span class="text-sm font-medium text-[#0d1b16] dark:text-primary">Extraction Confidence</span>
+<span class="text-sm font-bold text-primary">85%</span>
+</div>
+<div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+<div class="bg-primary h-2 rounded-full" style="width: 85%"></div>
+</div>
+</div>
+</div>
+<!-- Extracted Information Section -->
+<h2 class="text-[#0d1b16] dark:text-white text-[20px] font-bold leading-tight tracking-[-0.015em] px-4 pb-1">Extracted Information</h2>
+<p class="text-sm text-gray-500 dark:text-gray-400 px-4 mb-4">Please ensure all details match your physical ID card.</p>
+<div class="px-4 flex flex-col gap-1">
+<!-- ID Number Card -->
+<div class="bg-background-light dark:bg-white/5 rounded-xl border border-gray-100 dark:border-gray-800 p-4 mb-2">
+<div class="flex items-center justify-between">
+<div class="flex flex-col gap-1">
+<p class="text-gray-500 dark:text-gray-400 text-xs font-medium uppercase">Ghana Card Number</p>
+<p class="text-[#0d1b16] dark:text-white text-lg font-bold">GHA-123456789-0</p>
+</div>
+<span class="material-symbols-outlined text-gray-400 cursor-pointer">edit</span>
+</div>
+</div>
+<!-- List Items for Other Data -->
+<div class="divide-y divide-gray-100 dark:divide-gray-800 bg-background-light dark:bg-white/5 rounded-xl border border-gray-100 dark:border-gray-800">
+<div class="flex items-center gap-4 px-4 min-h-[72px] py-2">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-11">
+<span class="material-symbols-outlined">person</span>
+</div>
+<div class="flex flex-col justify-center flex-1">
+<p class="text-gray-500 dark:text-gray-400 text-xs font-medium uppercase">Full Name</p>
+<p class="text-[#0d1b16] dark:text-white text-base font-semibold">Kwame Asante Mensah</p>
+</div>
+<span class="material-symbols-outlined text-gray-400 text-sm">edit</span>
+</div>
+<div class="flex items-center gap-4 px-4 min-h-[72px] py-2">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-11">
+<span class="material-symbols-outlined">calendar_today</span>
+</div>
+<div class="flex flex-col justify-center flex-1">
+<p class="text-gray-500 dark:text-gray-400 text-xs font-medium uppercase">Date of Birth</p>
+<p class="text-[#0d1b16] dark:text-white text-base font-semibold">15 May 1985</p>
+</div>
+<span class="material-symbols-outlined text-gray-400 text-sm">edit</span>
+</div>
+<div class="flex items-center gap-4 px-4 min-h-[72px] py-2">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-11">
+<span class="material-symbols-outlined">wc</span>
+</div>
+<div class="flex flex-col justify-center flex-1">
+<p class="text-gray-500 dark:text-gray-400 text-xs font-medium uppercase">Gender</p>
+<p class="text-[#0d1b16] dark:text-white text-base font-semibold">Male</p>
+</div>
+<span class="material-symbols-outlined text-gray-400 text-sm">edit</span>
+</div>
+</div>
+</div>
+<div class="h-24"></div> <!-- Spacer for footer -->
+</div>
+<!-- Footer Actions -->
+<div class="p-4 bg-white/80 dark:bg-[#10221a]/80 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 flex gap-3 fixed bottom-0 left-0 right-0 max-w-[430px] mx-auto">
+<button class="flex-1 flex items-center justify-center h-12 rounded-xl border-2 border-primary text-primary font-bold text-base hover:bg-primary/5 transition-colors">
+                Retake
+            </button>
+<button class="flex-[2_2_0%] flex items-center justify-center h-12 rounded-xl bg-primary text-white font-bold text-base shadow-lg shadow-primary/20 hover:brightness-105 active:scale-[0.98] transition-all">
+                Confirm Details
+            </button>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sign In - Ghana Rental &amp; Tax</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#006b3e",
+                        "background-light": "#f5f8f7",
+                        "background-dark": "#0f231b",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Manrope', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen font-display">
+<!-- Top Navigation Bar -->
+<div class="flex items-center bg-primary p-4 pb-6 text-white justify-between rounded-b-xl shadow-lg">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-white/10 cursor-pointer">
+<span class="material-symbols-outlined">arrow_back_ios_new</span>
+</div>
+<h2 class="text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-10">Sign In to Account</h2>
+</div>
+<!-- Main Content Container -->
+<div class="max-w-[480px] mx-auto pb-12">
+<!-- Header & Security Icon -->
+<div class="flex flex-col items-center pt-8 pb-4">
+<div class="bg-primary/10 p-5 rounded-full mb-4">
+<span class="material-symbols-outlined text-primary text-[48px]">lock</span>
+</div>
+<h1 class="text-background-dark dark:text-white tracking-tight text-[28px] font-bold leading-tight px-4 text-center">Welcome Back</h1>
+<p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Access your rental and tax dashboard</p>
+</div>
+<!-- Login Form -->
+<div class="px-4 space-y-2">
+<!-- Email/Phone Input -->
+<div class="flex flex-col w-full py-2">
+<label class="flex flex-col w-full">
+<p class="text-background-dark dark:text-white text-sm font-semibold leading-normal pb-2 ml-1">Email or Phone Number</p>
+<input class="form-input flex w-full rounded-xl text-background-dark focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-gray-200 bg-white dark:bg-background-dark dark:text-white dark:border-gray-700 h-14 placeholder:text-gray-400 p-[15px] text-base font-normal" placeholder="024 XXX XXXX or email@domain.com" value=""/>
+</label>
+</div>
+<!-- Password Input -->
+<div class="flex flex-col w-full py-2">
+<label class="flex flex-col w-full">
+<p class="text-background-dark dark:text-white text-sm font-semibold leading-normal pb-2 ml-1">Password</p>
+<div class="flex w-full items-stretch rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-background-dark">
+<input class="form-input flex w-full border-none focus:ring-0 bg-transparent h-14 placeholder:text-gray-400 p-[15px] text-base font-normal dark:text-white" placeholder="Enter your password" type="password" value=""/>
+<div class="text-primary flex items-center justify-center px-4 cursor-pointer">
+<span class="material-symbols-outlined">visibility</span>
+</div>
+</div>
+</label>
+</div>
+<!-- Forgot Password -->
+<div class="flex justify-end pb-4">
+<a class="text-primary text-sm font-bold" href="#">Forgot Password?</a>
+</div>
+<!-- Sign In Button -->
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl shadow-md transition-all active:scale-[0.98]">
+                Sign In
+            </button>
+</div>
+<!-- Demo Accounts Section -->
+<div class="mt-10 px-4">
+<h3 class="text-background-dark dark:text-white text-base font-bold mb-4 ml-1">Try a Demo Account</h3>
+<div class="grid grid-cols-2 gap-3">
+<!-- Landlord Card -->
+<div class="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center text-center cursor-pointer hover:border-primary/50 transition-colors">
+<div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-3">
+<span class="material-symbols-outlined text-primary">house</span>
+</div>
+<span class="text-background-dark dark:text-white font-bold text-sm">Landlord</span>
+<span class="text-gray-500 text-[11px] mt-1">landlord@demo.com</span>
+</div>
+<!-- Tenant Card -->
+<div class="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col items-center text-center cursor-pointer hover:border-primary/50 transition-colors">
+<div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-3">
+<span class="material-symbols-outlined text-primary">person</span>
+</div>
+<span class="text-background-dark dark:text-white font-bold text-sm">Tenant</span>
+<span class="text-gray-500 text-[11px] mt-1">tenant@demo.com</span>
+</div>
+</div>
+</div>
+<!-- Footer Links -->
+<div class="mt-8 flex flex-col items-center space-y-6">
+<p class="text-sm text-gray-500">
+                Don't have an account? <a class="text-primary font-bold" href="#">Sign Up</a>
+</p>
+<!-- Trust Indicator -->
+<div class="flex items-center space-x-2 opacity-60">
+<span class="material-symbols-outlined text-[16px]">verified_user</span>
+<p class="text-[12px] font-medium">Securely powered by MoMo Payments</p>
+</div>
+</div>
+</div>
+<!-- Decorative Bottom Gradient for iOS feel -->
+<div class="fixed bottom-0 left-0 right-0 h-1 bg-primary/20"></div>
+</body></html>
