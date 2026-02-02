@@ -6,9 +6,12 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
+// Use command line arg or env variable for database URL
+const databaseUrl = process.argv[2] || process.env.DATABASE_URL;
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  connectionString: databaseUrl,
+  ssl: databaseUrl?.includes('render.com') ? { rejectUnauthorized: false } : false,
 });
 
 async function fixDataConsistency() {

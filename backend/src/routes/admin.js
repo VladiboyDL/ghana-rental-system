@@ -267,4 +267,148 @@ router.get('/sms-log', authenticate, authorize(ROLES.SYSTEM_ADMIN), (req, res) =
   });
 });
 
+// Fix data consistency - Admin only
+router.post('/fix-data-consistency', authenticate, authorize(ROLES.SYSTEM_ADMIN), async (req, res) => {
+  try {
+    console.log('Starting data consistency fix...');
+
+    // Update contract dates to be current/realistic
+    // Contract 1: Active, started 6 months ago
+    await db.query(`
+      UPDATE contracts
+      SET start_date = CURRENT_DATE - INTERVAL '6 months',
+          end_date = CURRENT_DATE + INTERVAL '18 months',
+          landlord_signed_at = CURRENT_DATE - INTERVAL '6 months' - INTERVAL '10 days',
+          tenant_confirmed_at = CURRENT_DATE - INTERVAL '6 months' - INTERVAL '9 days',
+          updated_at = NOW()
+      WHERE contract_number = 'CTR-2024-0001'
+    `);
+
+    // Contract 2: Active, started 3 months ago
+    await db.query(`
+      UPDATE contracts
+      SET start_date = CURRENT_DATE - INTERVAL '3 months',
+          end_date = CURRENT_DATE + INTERVAL '9 months',
+          landlord_signed_at = CURRENT_DATE - INTERVAL '3 months' - INTERVAL '10 days',
+          tenant_confirmed_at = CURRENT_DATE - INTERVAL '3 months' - INTERVAL '9 days',
+          updated_at = NOW()
+      WHERE contract_number = 'CTR-2024-0002'
+    `);
+
+    // Contract 3: Pending, starts next month
+    await db.query(`
+      UPDATE contracts
+      SET start_date = CURRENT_DATE + INTERVAL '1 month',
+          end_date = CURRENT_DATE + INTERVAL '13 months',
+          landlord_signed_at = CURRENT_DATE - INTERVAL '5 days',
+          updated_at = NOW()
+      WHERE contract_number = 'CTR-2024-0003'
+    `);
+
+    console.log('Contracts updated');
+
+    // Delete old payments
+    await db.query('DELETE FROM payments');
+    console.log('Old payments deleted');
+
+    // Get contracts for payment generation
+    const contractsResult = await db.query(`
+      SELECT id, contract_number, landlord_id, tenant_id, monthly_rent, start_date
+      FROM contracts
+      WHERE status = 'ACTIVE'
+      ORDER BY contract_number
+    `);
+
+    const contracts = contractsResult.rows;
+    let totalPayments = 0;
+
+    for (const contract of contracts) {
+      const startDate = new Date(contract.start_date);
+      const now = new Date();
+      const grossAmount = parseFloat(contract.monthly_rent);
+      const taxAmount = grossAmount * 0.08;
+      const netAmount = grossAmount - taxAmount - (grossAmount * 0.01);
+      const platformFee = grossAmount * 0.01;
+
+      let paymentDate = new Date(startDate);
+      let paymentNum = 1;
+
+      while (paymentDate < now) {
+        const periodStart = new Date(paymentDate);
+        const periodEnd = new Date(paymentDate);
+        periodEnd.setMonth(periodEnd.getMonth() + 1);
+        periodEnd.setDate(periodEnd.getDate() - 1);
+
+        const completedAt = new Date(periodStart);
+        completedAt.setDate(completedAt.getDate() + 3);
+
+        const settledAt = new Date(completedAt);
+        settledAt.setDate(settledAt.getDate() + 1);
+
+        const paymentRef = `PAY-2026-${String(totalPayments + 1).padStart(4, '0')}`;
+
+        await db.query(`
+          INSERT INTO payments (
+            payment_reference, contract_id, tenant_id, landlord_id,
+            gross_amount, tax_amount, net_amount, platform_fee,
+            period_start, period_end,
+            payment_method, payment_provider,
+            status, completed_at, settled_at, initiated_at
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $14)
+        `, [
+          paymentRef,
+          contract.id,
+          contract.tenant_id,
+          contract.landlord_id,
+          grossAmount,
+          taxAmount,
+          netAmount,
+          platformFee,
+          periodStart.toISOString().split('T')[0],
+          periodEnd.toISOString().split('T')[0],
+          'MOBILE_MONEY',
+          paymentNum % 2 === 0 ? 'MTN' : 'VODAFONE',
+          'COMPLETED',
+          completedAt.toISOString(),
+          settledAt.toISOString()
+        ]);
+
+        paymentDate.setMonth(paymentDate.getMonth() + 1);
+        paymentNum++;
+        totalPayments++;
+      }
+    }
+
+    console.log(`Generated ${totalPayments} payments`);
+
+    // Update market rent data to current period
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth() + 1;
+
+    await db.query(`
+      UPDATE market_rent_data
+      SET period_year = $1,
+          period_month = $2,
+          calculated_at = NOW()
+    `, [currentYear, currentMonth]);
+
+    console.log('Market data updated');
+
+    res.json({
+      success: true,
+      data: {
+        message: 'Data consistency fix completed',
+        contractsUpdated: contracts.length,
+        paymentsGenerated: totalPayments
+      }
+    });
+  } catch (error) {
+    console.error('Fix failed:', error);
+    res.status(500).json({
+      success: false,
+      error: { code: 'ERROR', message: error.message }
+    });
+  }
+});
+
 module.exports = router;
