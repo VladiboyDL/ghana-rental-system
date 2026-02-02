@@ -165,7 +165,7 @@ export default function AppNavigator() {
           <>
             <Stack.Screen
               name="MainTabs"
-              component={user?.role === 'LANDLORD' ? LandlordTabs : TenantTabs}
+              component={user?.role?.includes('LANDLORD') ? LandlordTabs : TenantTabs}
               options={{ headerShown: false }}
             />
 
