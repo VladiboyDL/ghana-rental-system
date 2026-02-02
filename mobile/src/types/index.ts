@@ -172,10 +172,11 @@ export type RootStackParamList = {
   // Contracts
   Contracts: undefined;
   ContractDetails: { contractId: string };
-  CreateContract: { propertyId?: string };
+  CreateContract: { propertyId?: string; scannedData?: ExtractedIdData };
   ScanDocument: {
     documentType: 'GHANA_CARD' | 'PASSPORT' | 'DRIVERS_LICENSE';
     onScanComplete?: (data: ExtractedIdData) => void;
+    returnScreen?: string;
   };
   SignContract: { contractId: string; onSignComplete?: () => void };
 

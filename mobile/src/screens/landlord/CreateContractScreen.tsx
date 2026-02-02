@@ -67,11 +67,24 @@ export default function CreateContractScreen() {
   const handleScanId = () => {
     navigation.navigate('ScanDocument', {
       documentType: 'GHANA_CARD',
-      onScanComplete: (data: ExtractedIdData) => {
-        setTenantIdData(data);
-      },
+      returnScreen: 'CreateContract',
     });
   };
+
+  // Listen for scan results when screen comes into focus
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      // Check if there's scan data in route params
+      const scanData = (route.params as any)?.scannedData;
+      if (scanData) {
+        setTenantIdData(scanData);
+        // Clear the param so it doesn't persist
+        navigation.setParams({ scannedData: undefined } as any);
+      }
+    });
+
+    return unsubscribe;
+  }, [navigation, route.params]);
 
   const validateStep = () => {
     switch (currentStep) {

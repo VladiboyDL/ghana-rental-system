@@ -121,10 +121,22 @@ export default function ScanDocumentScreen() {
   };
 
   const handleConfirm = () => {
-    if (extractedData && onScanComplete) {
-      onScanComplete(extractedData);
+    if (extractedData) {
+      // If there's a callback, use it (for backwards compatibility)
+      if (onScanComplete) {
+        onScanComplete(extractedData);
+      }
+
+      // Navigate back with the scanned data
+      const returnScreen = (route.params as any)?.returnScreen;
+      if (returnScreen) {
+        navigation.navigate(returnScreen as any, { scannedData: extractedData });
+      } else {
+        navigation.goBack();
+      }
+    } else {
+      navigation.goBack();
     }
-    navigation.goBack();
   };
 
   if (hasPermission === null) {

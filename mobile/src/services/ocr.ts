@@ -132,16 +132,20 @@ export function validateGhanaCardData(data: ExtractedIdData): {
  * Falls back to mock data for demo purposes
  */
 export async function performOCR(imageUri: string): Promise<string> {
-  try {
-    // Try to use ML Kit OCR if available
-    const MlkitOcr = require('react-native-mlkit-ocr').default;
-    const result = await MlkitOcr.detectFromUri(imageUri);
-    return result.map((block: any) => block.text).join('\n');
-  } catch (error) {
-    console.log('ML Kit not available, using mock data for demo');
-    // Return mock OCR text for demo purposes
-    return generateMockOCRText();
-  }
+  // For demo purposes, we'll use mock OCR data
+  // In production, you would integrate with a real OCR service like:
+  // - Google Cloud Vision API
+  // - AWS Textract
+  // - Azure Computer Vision
+  // - On-device ML Kit (requires native module setup)
+
+  console.log('Processing image for OCR:', imageUri);
+
+  // Simulate processing delay
+  await new Promise(resolve => setTimeout(resolve, 1500));
+
+  // Return mock OCR text for demo
+  return generateMockOCRText();
 }
 
 /**
