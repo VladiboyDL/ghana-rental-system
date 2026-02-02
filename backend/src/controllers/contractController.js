@@ -881,6 +881,9 @@ const getMyContracts = async (req, res) => {
     if (status) {
       query += ` AND c.status = $${paramIndex++}`;
       params.push(status);
+    } else {
+      // By default, exclude terminated contracts unless specifically requested
+      query += ` AND c.status != 'TERMINATED'`;
     }
 
     // Count total
