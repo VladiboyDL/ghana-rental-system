@@ -144,6 +144,7 @@ export default function CreateContractScreen() {
         tenantPhone: tenantPhone.trim(),
         tenantEmail: tenantEmail.trim() || undefined,
         tenantExtractedData: tenantIdData ? JSON.stringify(tenantIdData) : undefined,
+        contractType: 'RESIDENTIAL', // Default to residential for now
         startDate,
         endDate,
         monthlyRent: parseFloat(monthlyRent),

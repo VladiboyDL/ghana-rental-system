@@ -142,14 +142,16 @@ class ApiService {
       propertyId: string;
       tenantPhone?: string;
       tenantEmail?: string;
+      tenantId?: string;
       tenantExtractedData?: string;
+      contractType: string;
       startDate: string;
       endDate: string;
       monthlyRent: number;
       securityDeposit?: number;
       serviceCharge?: number;
       advanceMonths: number;
-      paymentFrequency: string;
+      paymentFrequency?: string;
     }) => {
       return this.client.post('/contracts', data);
     },
