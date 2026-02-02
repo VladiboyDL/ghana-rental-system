@@ -22,7 +22,7 @@ type SignContractRouteProp = RouteProp<RootStackParamList, 'SignContract'>;
 export default function SignContractScreen() {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<SignContractRouteProp>();
-  const { contractId, onSignComplete } = route.params;
+  const { contractId } = route.params;
 
   const signatureRef = useRef<SignatureViewRef>(null);
   const [isSigning, setIsSigning] = useState(false);
@@ -58,10 +58,6 @@ export default function SignContractScreen() {
       await api.contracts.sign(contractId, {
         signature: signature,
       });
-
-      if (onSignComplete) {
-        onSignComplete();
-      }
 
       Alert.alert(
         'Signature Saved',

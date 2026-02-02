@@ -37,6 +37,22 @@ export default function ConfirmContractScreen() {
     fetchContractDetails();
   }, [contractId]);
 
+  // Listen for scan results when screen comes into focus
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      // Check if there's scan data in route params
+      const scanData = (route.params as any)?.scannedData;
+      if (scanData) {
+        setIdData(scanData);
+        setHasScannedId(true);
+        // Clear the param so it doesn't persist
+        navigation.setParams({ scannedData: undefined } as any);
+      }
+    });
+
+    return unsubscribe;
+  }, [navigation, route.params]);
+
   const fetchContractDetails = async () => {
     try {
       const response = await api.contracts.getById(contractId);
@@ -53,19 +69,13 @@ export default function ConfirmContractScreen() {
   const handleScanId = () => {
     navigation.navigate('ScanDocument', {
       documentType: 'GHANA_CARD',
-      onScanComplete: (data: ExtractedIdData) => {
-        setIdData(data);
-        setHasScannedId(true);
-      },
+      returnScreen: 'ConfirmContract',
     });
   };
 
   const handleSignContract = () => {
     navigation.navigate('SignContract', {
       contractId,
-      onSignComplete: () => {
-        // Signature captured
-      },
     });
   };
 

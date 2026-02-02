@@ -178,11 +178,11 @@ export type RootStackParamList = {
     onScanComplete?: (data: ExtractedIdData) => void;
     returnScreen?: string;
   };
-  SignContract: { contractId: string; onSignComplete?: () => void };
+  SignContract: { contractId: string };
 
   // Tenant Screens
   TenantDashboard: undefined;
-  ConfirmContract: { contractId: string; code?: string };
+  ConfirmContract: { contractId: string; code?: string; scannedData?: ExtractedIdData };
 
   // Payments
   Payments: undefined;
