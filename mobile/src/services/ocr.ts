@@ -177,19 +177,19 @@ export async function performOCR(imageUri: string): Promise<string> {
 
 /**
  * Generate mock OCR text for demo purposes
- * Fixed to Ama Mensah for consistent demo experience
+ * Fixed to Vladimir Rovcanin for consistent demo experience
  */
 function generateMockOCRText(): string {
   return `REPUBLIC OF GHANA
 NATIONAL IDENTIFICATION AUTHORITY
 GHANA CARD
-SURNAME: MENSAH
-FIRST NAME: AMA
-OTHER NAMES: OWUSU
-FULL NAME: AMA OWUSU MENSAH
+SURNAME: ROVCANIN
+FIRST NAME: VLADIMIR
+OTHER NAMES:
+FULL NAME: VLADIMIR ROVCANIN
 PERSONAL ID NUMBER: GHA-284759163-7
-DATE OF BIRTH: 15/03/1992
-SEX: FEMALE
+DATE OF BIRTH: 25/04/1991
+SEX: MALE
 NATIONALITY: GHANAIAN
 PLACE OF ISSUANCE: ACCRA
 DATE OF ISSUANCE: 01/06/2023
