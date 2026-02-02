@@ -12,6 +12,7 @@ const marketRoutes = require('./market');
 const caseRoutes = require('./cases');
 const ussdRoutes = require('./ussd');
 const adminRoutes = require('./admin');
+const notificationRoutes = require('./notifications');
 
 // Mount routes
 router.use('/auth', authRoutes);
@@ -24,6 +25,7 @@ router.use('/market', marketRoutes);
 router.use('/cases', caseRoutes);
 router.use('/ussd', ussdRoutes);
 router.use('/admin', adminRoutes);
+router.use('/notifications', notificationRoutes);
 
 // Health check
 router.get('/health', (req, res) => {
