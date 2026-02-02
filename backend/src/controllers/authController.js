@@ -615,6 +615,94 @@ const resendOTP = async (req, res) => {
   }
 };
 
+// Simulation-only: Auto-activate user (bypasses OTP for testing/simulation)
+const simulationActivate = async (req, res) => {
+  try {
+    // Only allow in development/simulation mode
+    const simulationKey = req.headers['x-simulation-key'];
+    if (simulationKey !== 'ghana-rental-sim-2024') {
+      return res.status(403).json({
+        success: false,
+        error: {
+          code: 'FORBIDDEN',
+          message: 'Invalid simulation key'
+        }
+      });
+    }
+
+    const { phone, email } = req.body;
+
+    if (!phone && !email) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Phone or email is required'
+        }
+      });
+    }
+
+    // Find user
+    let query = 'SELECT * FROM users WHERE ';
+    let params = [];
+
+    if (phone) {
+      const formattedPhone = formatGhanaPhone(phone);
+      query += 'phone = $1';
+      params = [formattedPhone];
+    } else {
+      query += 'email = $1';
+      params = [email];
+    }
+
+    const userResult = await db.query(query, params);
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'USER_NOT_FOUND',
+          message: 'User not found'
+        }
+      });
+    }
+
+    const user = userResult.rows[0];
+
+    // Activate user
+    await db.query(`UPDATE users SET status = 'ACTIVE' WHERE id = $1`, [user.id]);
+
+    // Generate token
+    const token = generateToken(user.id);
+
+    res.json({
+      success: true,
+      data: {
+        message: 'User activated for simulation',
+        token,
+        user: {
+          id: user.id,
+          email: user.email,
+          phone: user.phone,
+          firstName: user.first_name,
+          lastName: user.last_name,
+          role: user.role,
+          status: 'ACTIVE'
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Simulation activate error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'ERROR',
+        message: error.message
+      }
+    });
+  }
+};
+
 module.exports = {
   register,
   verifyOTP,
@@ -624,5 +712,6 @@ module.exports = {
   resetPassword,
   verifyIdentity,
   refreshToken,
-  resendOTP
+  resendOTP,
+  simulationActivate
 };

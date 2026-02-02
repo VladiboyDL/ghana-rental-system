@@ -13,4 +13,7 @@ router.post('/reset-password', authController.resetPassword);
 router.post('/verify-identity', authenticate, authController.verifyIdentity);
 router.post('/resend-otp', authController.resendOTP);
 
+// Simulation-only endpoint for bypassing OTP
+router.post('/simulation-activate', authController.simulationActivate);
+
 module.exports = router;
