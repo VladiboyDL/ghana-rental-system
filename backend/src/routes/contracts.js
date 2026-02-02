@@ -14,6 +14,7 @@ router.get('/:id', authenticate, contractController.getContractById);
 router.get('/:id/payments', authenticate, contractController.getContractPayments);
 router.patch('/:id', authenticate, authorize(ROLES.LANDLORD_INDIVIDUAL, ROLES.LANDLORD_CORPORATE), contractController.updateContract);
 router.post('/:id/confirm', authenticate, authorize(ROLES.TENANT_INDIVIDUAL, ROLES.TENANT_CORPORATE), contractController.confirmContract);
+router.post('/:id/sign', authenticate, contractController.signContract);
 router.post('/:id/object', authenticate, authorize(ROLES.TENANT_INDIVIDUAL, ROLES.TENANT_CORPORATE), contractController.objectToContract);
 router.post('/:id/cancel', authenticate, authorize(ROLES.LANDLORD_INDIVIDUAL, ROLES.LANDLORD_CORPORATE), contractController.cancelContract);
 router.post('/:id/terminate', authenticate, contractController.terminateContract);

@@ -1117,6 +1117,89 @@ const cancelContract = async (req, res) => {
   }
 };
 
+// Sign contract with signature
+const signContract = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { signature } = req.body;
+    const user = req.user;
+
+    if (!signature) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'Signature is required' }
+      });
+    }
+
+    const contractResult = await db.query('SELECT * FROM contracts WHERE id = $1', [id]);
+    if (contractResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Contract not found' }
+      });
+    }
+
+    const contract = contractResult.rows[0];
+
+    // Verify user is party to the contract
+    const isLandlord = contract.landlord_id === user.id;
+    const isTenant = contract.tenant_id === user.id;
+
+    if (!isLandlord && !isTenant && user.role !== 'SYSTEM_ADMIN') {
+      return res.status(403).json({
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'You are not a party to this contract' }
+      });
+    }
+
+    // Update the appropriate signature field (using signature_url columns for base64 data)
+    if (isLandlord) {
+      await db.query(`
+        UPDATE contracts
+        SET landlord_signature_url = $1,
+            landlord_signed = true,
+            landlord_signed_at = NOW(),
+            updated_at = NOW()
+        WHERE id = $2
+      `, [signature, id]);
+    } else if (isTenant) {
+      await db.query(`
+        UPDATE contracts
+        SET tenant_signature_url = $1,
+            tenant_confirmed = true,
+            tenant_confirmed_at = NOW(),
+            status = CASE
+              WHEN landlord_signed = true THEN 'ACTIVE'
+              ELSE status
+            END,
+            updated_at = NOW()
+        WHERE id = $2
+      `, [signature, id]);
+    }
+
+    // Get updated contract
+    const updatedResult = await db.query('SELECT * FROM contracts WHERE id = $1', [id]);
+    const updatedContract = updatedResult.rows[0];
+
+    res.json({
+      success: true,
+      data: {
+        message: isLandlord ? 'Landlord signature saved' : 'Tenant signature saved',
+        contractId: id,
+        contractNumber: updatedContract.contract_number,
+        status: updatedContract.status,
+        landlordSigned: updatedContract.landlord_signed,
+        tenantConfirmed: updatedContract.tenant_confirmed
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { code: 'ERROR', message: error.message }
+    });
+  }
+};
+
 module.exports = {
   createContract,
   getContracts,
@@ -1129,5 +1212,6 @@ module.exports = {
   objectToContract,
   terminateContract,
   renewContract,
-  getPendingConfirmations
+  getPendingConfirmations,
+  signContract
 };
