@@ -15,6 +15,7 @@
     "db:reset": "npm run migrate && npm run seed",
     "db:indexes": "node database/migrations/add-indexes.js",
     "seed:more": "node database/seeds/seed-more-data.js",
+    "add:photos": "node database/migrations/add-property-photos.js",
     "test": "jest",
     "test:coverage": "jest --coverage"
   },
