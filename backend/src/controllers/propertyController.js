@@ -673,11 +673,224 @@ const requestVerification = async (req, res) => {
   }
 };
 
+// Get my properties (landlord only)
+const getMyProperties = async (req, res) => {
+  try {
+    const landlordId = req.user.id;
+    const { status, page = 1, limit = 20 } = req.query;
+
+    let query = `
+      SELECT p.*,
+             (SELECT COUNT(*) FROM contracts c WHERE c.property_id = p.id AND c.status = 'ACTIVE') as active_contracts
+      FROM properties p
+      WHERE p.landlord_id = $1
+    `;
+    const params = [landlordId];
+    let paramIndex = 2;
+
+    if (status) {
+      query += ` AND p.status = $${paramIndex++}`;
+      params.push(status);
+    }
+
+    // Count total
+    const countQuery = query.replace('SELECT p.*', 'SELECT COUNT(*) as total').replace(', \n             (SELECT COUNT(*) FROM contracts c WHERE c.property_id = p.id AND c.status = \'ACTIVE\') as active_contracts', '');
+    const countResult = await db.query(countQuery, params.slice(0, paramIndex - 1));
+    const total = parseInt(countResult.rows[0]?.total || 0);
+
+    // Add pagination
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+    query += ` ORDER BY p.created_at DESC LIMIT $${paramIndex++} OFFSET $${paramIndex}`;
+    params.push(parseInt(limit), offset);
+
+    const result = await db.query(query, params);
+
+    res.json({
+      success: true,
+      data: result.rows.map(p => ({
+        id: p.id,
+        propertyCode: p.property_code,
+        digitalAddress: p.digital_address,
+        region: p.region,
+        district: p.district,
+        city: p.city,
+        neighborhood: p.neighborhood,
+        propertyType: p.property_type,
+        propertyTypeName: PROPERTY_TYPES[p.property_type]?.name,
+        propertyCategory: p.property_category,
+        bedrooms: p.bedrooms,
+        bathrooms: p.bathrooms,
+        isFurnished: p.is_furnished === true,
+        hasParking: p.has_parking === true,
+        hasSecurity: p.has_security === true,
+        status: p.status,
+        isAvailable: p.is_available === true,
+        activeContracts: parseInt(p.active_contracts || 0),
+        photos: typeof p.photos === 'string' ? JSON.parse(p.photos || '[]') : (p.photos || []),
+        ownershipVerified: p.ownership_verified === true,
+        createdAt: p.created_at,
+        updatedAt: p.updated_at
+      })),
+      meta: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        totalPages: Math.ceil(total / parseInt(limit))
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'ERROR',
+        message: error.message
+      }
+    });
+  }
+};
+
+// Update property availability
+const updateAvailability = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { isAvailable } = req.body;
+
+    const checkResult = await db.query('SELECT * FROM properties WHERE id = $1', [id]);
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Property not found' }
+      });
+    }
+
+    const property = checkResult.rows[0];
+    if (property.landlord_id !== req.user.id && req.user.role !== 'SYSTEM_ADMIN') {
+      return res.status(403).json({
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'You do not have permission to update this property' }
+      });
+    }
+
+    await db.query('UPDATE properties SET is_available = $1, updated_at = NOW() WHERE id = $2', [isAvailable ? true : false, id]);
+
+    res.json({
+      success: true,
+      data: { message: 'Property availability updated', isAvailable: isAvailable ? true : false }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { code: 'ERROR', message: error.message }
+    });
+  }
+};
+
+// List property for rent
+const listProperty = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { monthlyRent, securityDeposit, availableFrom } = req.body;
+
+    const checkResult = await db.query('SELECT * FROM properties WHERE id = $1', [id]);
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Property not found' }
+      });
+    }
+
+    const property = checkResult.rows[0];
+    if (property.landlord_id !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'You do not have permission to list this property' }
+      });
+    }
+
+    if (property.status !== 'VERIFIED') {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'NOT_VERIFIED', message: 'Property must be verified before listing' }
+      });
+    }
+
+    await db.query(`
+      UPDATE properties
+      SET is_available = true, updated_at = NOW()
+      WHERE id = $1
+    `, [id]);
+
+    res.json({
+      success: true,
+      data: {
+        message: 'Property listed for rent',
+        propertyId: id,
+        monthlyRent,
+        securityDeposit,
+        availableFrom
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { code: 'ERROR', message: error.message }
+    });
+  }
+};
+
+// Delete property
+const deleteProperty = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const checkResult = await db.query('SELECT * FROM properties WHERE id = $1', [id]);
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Property not found' }
+      });
+    }
+
+    const property = checkResult.rows[0];
+    if (property.landlord_id !== req.user.id && req.user.role !== 'SYSTEM_ADMIN') {
+      return res.status(403).json({
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'You do not have permission to delete this property' }
+      });
+    }
+
+    // Check for active contracts
+    const contractResult = await db.query('SELECT COUNT(*) as count FROM contracts WHERE property_id = $1 AND status = \'ACTIVE\'', [id]);
+    if (parseInt(contractResult.rows[0].count) > 0) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'HAS_ACTIVE_CONTRACTS', message: 'Cannot delete property with active contracts' }
+      });
+    }
+
+    await db.query('DELETE FROM properties WHERE id = $1', [id]);
+
+    res.json({
+      success: true,
+      data: { message: 'Property deleted successfully' }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { code: 'ERROR', message: error.message }
+    });
+  }
+};
+
 module.exports = {
   createProperty,
   getProperties,
   getPropertyById,
+  getMyProperties,
   updateProperty,
+  updateAvailability,
+  listProperty,
+  deleteProperty,
   searchProperties,
   uploadPhotos,
   requestVerification

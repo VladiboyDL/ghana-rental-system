@@ -844,10 +844,287 @@ const getPendingConfirmations = async (req, res) => {
   }
 };
 
+// Get my contracts (filtered by user role - landlord or tenant)
+const getMyContracts = async (req, res) => {
+  try {
+    const user = req.user;
+    const { status, page = 1, limit = 20 } = req.query;
+
+    let query = `
+      SELECT c.*,
+             p.property_code, p.digital_address, p.neighborhood, p.district, p.property_type,
+             l.first_name as landlord_first_name, l.last_name as landlord_last_name,
+             l.company_name as landlord_company, l.is_corporate as landlord_is_corporate,
+             t.first_name as tenant_first_name, t.last_name as tenant_last_name,
+             t.company_name as tenant_company, t.is_corporate as tenant_is_corporate
+      FROM contracts c
+      JOIN properties p ON c.property_id = p.id
+      JOIN users l ON c.landlord_id = l.id
+      LEFT JOIN users t ON c.tenant_id = t.id
+      WHERE 1=1
+    `;
+    const params = [];
+    let paramIndex = 1;
+
+    // Filter by role
+    if (user.role.includes('LANDLORD')) {
+      query += ` AND c.landlord_id = $${paramIndex++}`;
+      params.push(user.id);
+    } else if (user.role.includes('TENANT')) {
+      query += ` AND c.tenant_id = $${paramIndex++}`;
+      params.push(user.id);
+    } else {
+      // For admin/GRA, return empty if they use /my endpoint
+      return res.json({ success: true, data: [], meta: { page: 1, limit: 20, total: 0, totalPages: 0 } });
+    }
+
+    if (status) {
+      query += ` AND c.status = $${paramIndex++}`;
+      params.push(status);
+    }
+
+    // Count total
+    const countQuery = query.replace(/SELECT c\.\*.*FROM/, 'SELECT COUNT(*) as total FROM');
+    const countResult = await db.query(countQuery, params);
+    const total = parseInt(countResult.rows[0]?.total || 0);
+
+    // Add pagination
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+    query += ` ORDER BY c.created_at DESC LIMIT $${paramIndex++} OFFSET $${paramIndex}`;
+    params.push(parseInt(limit), offset);
+
+    const result = await db.query(query, params);
+
+    res.json({
+      success: true,
+      data: result.rows.map(c => ({
+        id: c.id,
+        contractNumber: c.contract_number,
+        contractType: c.contract_type,
+        status: c.status,
+        startDate: c.start_date,
+        endDate: c.end_date,
+        monthlyRent: c.monthly_rent,
+        securityDeposit: c.security_deposit,
+        advanceMonths: c.advance_months,
+        taxRate: c.tax_rate,
+        totalTaxWithheld: c.total_tax_withheld,
+        property: {
+          id: c.property_id,
+          propertyCode: c.property_code,
+          digitalAddress: c.digital_address,
+          neighborhood: c.neighborhood,
+          district: c.district,
+          propertyType: c.property_type,
+          propertyTypeName: PROPERTY_TYPES[c.property_type]?.name
+        },
+        landlord: {
+          id: c.landlord_id,
+          name: c.landlord_is_corporate ? c.landlord_company : `${c.landlord_first_name} ${c.landlord_last_name}`
+        },
+        tenant: c.tenant_id ? {
+          id: c.tenant_id,
+          name: c.tenant_is_corporate ? c.tenant_company : `${c.tenant_first_name} ${c.tenant_last_name}`
+        } : null,
+        tenantConfirmed: c.tenant_confirmed === true,
+        createdAt: c.created_at
+      })),
+      meta: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        totalPages: Math.ceil(total / parseInt(limit))
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { code: 'ERROR', message: error.message }
+    });
+  }
+};
+
+// Get contract payments
+const getContractPayments = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = req.user;
+
+    // Verify contract access
+    const contractResult = await db.query('SELECT * FROM contracts WHERE id = $1', [id]);
+    if (contractResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Contract not found' }
+      });
+    }
+
+    const contract = contractResult.rows[0];
+    const isLandlord = contract.landlord_id === user.id;
+    const isTenant = contract.tenant_id === user.id;
+    const isAdmin = user.role === 'SYSTEM_ADMIN' || user.role === 'GRA_OFFICER';
+
+    if (!isLandlord && !isTenant && !isAdmin) {
+      return res.status(403).json({
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'Access denied' }
+      });
+    }
+
+    const paymentsResult = await db.query(`
+      SELECT * FROM payments WHERE contract_id = $1 ORDER BY initiated_at DESC
+    `, [id]);
+
+    res.json({
+      success: true,
+      data: paymentsResult.rows.map(p => ({
+        id: p.id,
+        reference: p.payment_reference,
+        grossAmount: p.gross_amount,
+        taxAmount: p.tax_amount,
+        netAmount: p.net_amount,
+        status: p.status,
+        paymentMethod: p.payment_method,
+        periodStart: p.period_start,
+        periodEnd: p.period_end,
+        initiatedAt: p.initiated_at,
+        completedAt: p.completed_at
+      }))
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { code: 'ERROR', message: error.message }
+    });
+  }
+};
+
+// Update contract (landlord only, before confirmation)
+const updateContract = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { serviceCharge, notes } = req.body;
+
+    const contractResult = await db.query('SELECT * FROM contracts WHERE id = $1', [id]);
+    if (contractResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Contract not found' }
+      });
+    }
+
+    const contract = contractResult.rows[0];
+
+    if (contract.landlord_id !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'Only landlord can update the contract' }
+      });
+    }
+
+    if (contract.status !== 'DRAFT' && contract.status !== 'PENDING_TENANT_CONFIRMATION') {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'INVALID_STATUS', message: 'Cannot update contract after confirmation' }
+      });
+    }
+
+    const updates = [];
+    const params = [];
+    let paramIndex = 1;
+
+    if (serviceCharge !== undefined) {
+      updates.push(`service_charge = $${paramIndex++}`);
+      params.push(serviceCharge);
+    }
+    if (notes !== undefined) {
+      updates.push(`notes = $${paramIndex++}`);
+      params.push(notes);
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'NO_UPDATES', message: 'No fields to update' }
+      });
+    }
+
+    updates.push('updated_at = NOW()');
+    params.push(id);
+
+    await db.query(`UPDATE contracts SET ${updates.join(', ')} WHERE id = $${paramIndex}`, params);
+
+    res.json({
+      success: true,
+      data: { message: 'Contract updated successfully' }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { code: 'ERROR', message: error.message }
+    });
+  }
+};
+
+// Cancel contract (landlord only, before confirmation)
+const cancelContract = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+
+    const contractResult = await db.query('SELECT * FROM contracts WHERE id = $1', [id]);
+    if (contractResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Contract not found' }
+      });
+    }
+
+    const contract = contractResult.rows[0];
+
+    if (contract.landlord_id !== req.user.id && req.user.role !== 'SYSTEM_ADMIN') {
+      return res.status(403).json({
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'Only landlord can cancel the contract' }
+      });
+    }
+
+    if (contract.status === 'ACTIVE') {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'INVALID_STATUS', message: 'Use terminate for active contracts' }
+      });
+    }
+
+    await db.query(`
+      UPDATE contracts
+      SET status = 'CANCELLED',
+          termination_reason = $1,
+          terminated_at = NOW(),
+          updated_at = NOW()
+      WHERE id = $2
+    `, [reason || 'Cancelled by landlord', id]);
+
+    res.json({
+      success: true,
+      data: { message: 'Contract cancelled successfully' }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { code: 'ERROR', message: error.message }
+    });
+  }
+};
+
 module.exports = {
   createContract,
   getContracts,
   getContractById,
+  getMyContracts,
+  getContractPayments,
+  updateContract,
+  cancelContract,
   confirmContract,
   objectToContract,
   terminateContract,

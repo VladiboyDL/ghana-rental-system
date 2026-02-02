@@ -379,9 +379,174 @@ const getLocations = async (req, res) => {
   }
 };
 
+// Get all regions
+const getRegions = async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT DISTINCT region FROM properties ORDER BY region
+    `);
+
+    res.json({
+      success: true,
+      data: result.rows.map(r => r.region)
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { code: 'ERROR', message: error.message }
+    });
+  }
+};
+
+// Get districts by region
+const getDistricts = async (req, res) => {
+  try {
+    const { region } = req.query;
+
+    let query = 'SELECT DISTINCT district FROM properties';
+    const params = [];
+
+    if (region) {
+      query += ' WHERE region = $1';
+      params.push(region);
+    }
+
+    query += ' ORDER BY district';
+
+    const result = await db.query(query, params);
+
+    res.json({
+      success: true,
+      data: result.rows.map(r => r.district)
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { code: 'ERROR', message: error.message }
+    });
+  }
+};
+
+// Get neighborhoods by district
+const getNeighborhoods = async (req, res) => {
+  try {
+    const { region, district } = req.query;
+
+    let query = 'SELECT DISTINCT neighborhood FROM properties WHERE neighborhood IS NOT NULL';
+    const params = [];
+    let paramIndex = 1;
+
+    if (region) {
+      query += ` AND region = $${paramIndex++}`;
+      params.push(region);
+    }
+
+    if (district) {
+      query += ` AND district = $${paramIndex++}`;
+      params.push(district);
+    }
+
+    query += ' ORDER BY neighborhood';
+
+    const result = await db.query(query, params);
+
+    res.json({
+      success: true,
+      data: result.rows.map(r => r.neighborhood).filter(Boolean)
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { code: 'ERROR', message: error.message }
+    });
+  }
+};
+
+// Get property types
+const getPropertyTypes = async (req, res) => {
+  try {
+    res.json({
+      success: true,
+      data: Object.entries(PROPERTY_TYPES).map(([code, info]) => ({
+        code,
+        name: info.name,
+        category: info.category
+      }))
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { code: 'ERROR', message: error.message }
+    });
+  }
+};
+
+// Get rent data (for GRA)
+const getRentData = async (req, res) => {
+  try {
+    const { region, district, propertyType, page = 1, limit = 20 } = req.query;
+
+    let query = 'SELECT * FROM market_rent_data WHERE 1=1';
+    const params = [];
+    let paramIndex = 1;
+
+    if (region) {
+      query += ` AND region = $${paramIndex++}`;
+      params.push(region);
+    }
+
+    if (district) {
+      query += ` AND district = $${paramIndex++}`;
+      params.push(district);
+    }
+
+    if (propertyType) {
+      query += ` AND property_type = $${paramIndex++}`;
+      params.push(propertyType);
+    }
+
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+    query += ` ORDER BY period_year DESC, period_month DESC LIMIT $${paramIndex++} OFFSET $${paramIndex}`;
+    params.push(parseInt(limit), offset);
+
+    const result = await db.query(query, params);
+
+    res.json({
+      success: true,
+      data: result.rows.map(r => ({
+        id: r.id,
+        region: r.region,
+        district: r.district,
+        neighborhood: r.neighborhood,
+        propertyType: r.property_type,
+        propertyTypeName: PROPERTY_TYPES[r.property_type]?.name,
+        bedrooms: r.bedrooms,
+        averageRent: r.average_rent,
+        medianRent: r.median_rent,
+        minRent: r.min_rent,
+        maxRent: r.max_rent,
+        sampleSize: r.sample_size,
+        periodYear: r.period_year,
+        periodMonth: r.period_month,
+        calculatedAt: r.calculated_at
+      }))
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { code: 'ERROR', message: error.message }
+    });
+  }
+};
+
 module.exports = {
   getRentCheck,
   getRentTrends,
   compareToMarket,
-  getLocations
+  getLocations,
+  getRegions,
+  getDistricts,
+  getNeighborhoods,
+  getPropertyTypes,
+  getRentData
 };

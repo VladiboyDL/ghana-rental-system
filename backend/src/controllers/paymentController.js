@@ -565,10 +565,195 @@ const getPaymentSummary = async (req, res) => {
   }
 };
 
+// Get my payments (filtered by user role)
+const getMyPayments = async (req, res) => {
+  try {
+    const user = req.user;
+    const { status, page = 1, limit = 20 } = req.query;
+
+    let query = `
+      SELECT p.*, c.contract_number, c.monthly_rent,
+             pr.property_code, pr.neighborhood, pr.district,
+             l.first_name as landlord_first_name, l.last_name as landlord_last_name,
+             l.company_name as landlord_company, l.is_corporate as landlord_is_corporate,
+             t.first_name as tenant_first_name, t.last_name as tenant_last_name,
+             t.company_name as tenant_company, t.is_corporate as tenant_is_corporate
+      FROM payments p
+      JOIN contracts c ON p.contract_id = c.id
+      JOIN properties pr ON c.property_id = pr.id
+      JOIN users l ON p.landlord_id = l.id
+      JOIN users t ON p.tenant_id = t.id
+      WHERE 1=1
+    `;
+    const params = [];
+    let paramIndex = 1;
+
+    // Filter by role
+    if (user.role.includes('LANDLORD')) {
+      query += ` AND p.landlord_id = $${paramIndex++}`;
+      params.push(user.id);
+    } else if (user.role.includes('TENANT')) {
+      query += ` AND p.tenant_id = $${paramIndex++}`;
+      params.push(user.id);
+    } else {
+      return res.json({ success: true, data: [], meta: { page: 1, limit: 20, total: 0, totalPages: 0 } });
+    }
+
+    if (status) {
+      query += ` AND p.status = $${paramIndex++}`;
+      params.push(status);
+    }
+
+    // Count total
+    const countQuery = query.replace(/SELECT p\.\*.*FROM/, 'SELECT COUNT(*) as total FROM');
+    const countResult = await db.query(countQuery, params);
+    const total = parseInt(countResult.rows[0]?.total || 0);
+
+    // Add pagination
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+    query += ` ORDER BY p.initiated_at DESC LIMIT $${paramIndex++} OFFSET $${paramIndex}`;
+    params.push(parseInt(limit), offset);
+
+    const result = await db.query(query, params);
+
+    res.json({
+      success: true,
+      data: result.rows.map(p => ({
+        id: p.id,
+        paymentReference: p.payment_reference,
+        grossAmount: p.gross_amount,
+        taxAmount: p.tax_amount,
+        netAmount: p.net_amount,
+        platformFee: p.platform_fee,
+        periodStart: p.period_start,
+        periodEnd: p.period_end,
+        paymentMethod: p.payment_method,
+        status: p.status,
+        contract: {
+          id: p.contract_id,
+          contractNumber: p.contract_number,
+          monthlyRent: p.monthly_rent
+        },
+        property: {
+          propertyCode: p.property_code,
+          neighborhood: p.neighborhood,
+          district: p.district
+        },
+        landlord: {
+          id: p.landlord_id,
+          name: p.landlord_is_corporate ? p.landlord_company : `${p.landlord_first_name} ${p.landlord_last_name}`
+        },
+        tenant: {
+          id: p.tenant_id,
+          name: p.tenant_is_corporate ? p.tenant_company : `${p.tenant_first_name} ${p.tenant_last_name}`
+        },
+        initiatedAt: p.initiated_at,
+        completedAt: p.completed_at
+      })),
+      meta: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        totalPages: Math.ceil(total / parseInt(limit))
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { code: 'ERROR', message: error.message }
+    });
+  }
+};
+
+// Get payment receipt
+const getPaymentReceipt = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = req.user;
+
+    const result = await db.query(`
+      SELECT p.*, c.contract_number,
+             pr.property_code, pr.digital_address, pr.neighborhood, pr.district,
+             l.first_name as landlord_first_name, l.last_name as landlord_last_name,
+             l.company_name as landlord_company, l.is_corporate as landlord_is_corporate,
+             l.tin_number as landlord_tin,
+             t.first_name as tenant_first_name, t.last_name as tenant_last_name,
+             t.company_name as tenant_company, t.is_corporate as tenant_is_corporate
+      FROM payments p
+      JOIN contracts c ON p.contract_id = c.id
+      JOIN properties pr ON c.property_id = pr.id
+      JOIN users l ON p.landlord_id = l.id
+      JOIN users t ON p.tenant_id = t.id
+      WHERE p.id = $1
+    `, [id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Payment not found' }
+      });
+    }
+
+    const payment = result.rows[0];
+
+    // Check authorization
+    const isLandlord = payment.landlord_id === user.id;
+    const isTenant = payment.tenant_id === user.id;
+    const isAdmin = user.role === 'SYSTEM_ADMIN' || user.role === 'GRA_OFFICER';
+
+    if (!isLandlord && !isTenant && !isAdmin) {
+      return res.status(403).json({
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'Access denied' }
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        receiptNumber: `RCP-${payment.payment_reference}`,
+        paymentReference: payment.payment_reference,
+        date: payment.completed_at || payment.initiated_at,
+        grossAmount: payment.gross_amount,
+        taxAmount: payment.tax_amount,
+        taxRate: '8%',
+        netAmount: payment.net_amount,
+        paymentMethod: payment.payment_method,
+        status: payment.status,
+        periodStart: payment.period_start,
+        periodEnd: payment.period_end,
+        property: {
+          code: payment.property_code,
+          address: `${payment.neighborhood || ''}, ${payment.district}`.trim().replace(/^,\s*/, ''),
+          digitalAddress: payment.digital_address
+        },
+        landlord: {
+          name: payment.landlord_is_corporate ? payment.landlord_company : `${payment.landlord_first_name} ${payment.landlord_last_name}`,
+          tin: payment.landlord_tin
+        },
+        tenant: {
+          name: payment.tenant_is_corporate ? payment.tenant_company : `${payment.tenant_first_name} ${payment.tenant_last_name}`
+        },
+        contract: {
+          number: payment.contract_number
+        },
+        taxCertificateNote: 'Tax withheld at source and remitted to Ghana Revenue Authority'
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { code: 'ERROR', message: error.message }
+    });
+  }
+};
+
 module.exports = {
   calculateBreakdown,
   initiatePayment,
   getPayments,
   getPaymentById,
-  getPaymentSummary
+  getPaymentSummary,
+  getMyPayments,
+  getPaymentReceipt
 };

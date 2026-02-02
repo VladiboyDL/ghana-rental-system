@@ -3,6 +3,155 @@ const { generateId, generateCaseNumber } = require('../utils/helpers');
 const { sendSMS } = require('../simulators/sms');
 const { CASE_TYPES, CASE_STATUS, CASE_PRIORITY } = require('../config/constants');
 
+// Get my cases (for inspector)
+const getMyCases = async (req, res) => {
+  try {
+    const user = req.user;
+    const { status, page = 1, limit = 20 } = req.query;
+
+    let query = `
+      SELECT ic.*,
+             p.property_code, p.digital_address, p.neighborhood, p.district, p.region,
+             u.first_name as inspector_first_name, u.last_name as inspector_last_name
+      FROM inspection_cases ic
+      JOIN properties p ON ic.property_id = p.id
+      LEFT JOIN users u ON ic.assigned_inspector_id = u.id
+      WHERE ic.assigned_inspector_id = $1
+    `;
+    const params = [user.id];
+    let paramIndex = 2;
+
+    if (status) {
+      query += ` AND ic.status = $${paramIndex++}`;
+      params.push(status);
+    }
+
+    // Count total
+    const countQuery = query.replace(/SELECT ic\.\*.*FROM/, 'SELECT COUNT(*) as total FROM');
+    const countResult = await db.query(countQuery, params);
+    const total = parseInt(countResult.rows[0].total);
+
+    // Add pagination
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+    query += ` ORDER BY ic.created_at DESC LIMIT $${paramIndex++} OFFSET $${paramIndex}`;
+    params.push(parseInt(limit), offset);
+
+    const result = await db.query(query, params);
+
+    res.json({
+      success: true,
+      data: result.rows.map(c => ({
+        id: c.id,
+        caseNumber: c.case_number,
+        caseType: c.case_type,
+        priority: c.priority,
+        riskScore: c.risk_score,
+        status: c.status,
+        source: c.source,
+        description: c.description,
+        scheduledDate: c.scheduled_date,
+        property: {
+          id: c.property_id,
+          propertyCode: c.property_code,
+          digitalAddress: c.digital_address,
+          neighborhood: c.neighborhood,
+          district: c.district,
+          region: c.region
+        },
+        createdAt: c.created_at
+      })),
+      meta: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        totalPages: Math.ceil(total / parseInt(limit))
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'ERROR',
+        message: error.message
+      }
+    });
+  }
+};
+
+// Get case statistics
+const getCaseStats = async (req, res) => {
+  try {
+    const user = req.user;
+
+    let whereClause = '';
+    const params = [];
+
+    // Filter by role
+    if (user.role === 'INSPECTOR') {
+      whereClause = 'WHERE ic.assigned_inspector_id = $1';
+      params.push(user.id);
+    }
+
+    // Get status counts
+    const statusQuery = `
+      SELECT status, COUNT(*) as count
+      FROM inspection_cases ic
+      ${whereClause}
+      GROUP BY status
+    `;
+    const statusResult = await db.query(statusQuery, params);
+
+    // Get priority counts
+    const priorityQuery = `
+      SELECT priority, COUNT(*) as count
+      FROM inspection_cases ic
+      ${whereClause}
+      GROUP BY priority
+    `;
+    const priorityResult = await db.query(priorityQuery, params);
+
+    // Get case type counts
+    const typeQuery = `
+      SELECT case_type, COUNT(*) as count
+      FROM inspection_cases ic
+      ${whereClause}
+      GROUP BY case_type
+    `;
+    const typeResult = await db.query(typeQuery, params);
+
+    // Get total count
+    const totalQuery = `SELECT COUNT(*) as total FROM inspection_cases ic ${whereClause}`;
+    const totalResult = await db.query(totalQuery, params);
+
+    const statusCounts = {};
+    statusResult.rows.forEach(r => statusCounts[r.status] = parseInt(r.count));
+
+    const priorityCounts = {};
+    priorityResult.rows.forEach(r => priorityCounts[r.priority] = parseInt(r.count));
+
+    const typeCounts = {};
+    typeResult.rows.forEach(r => typeCounts[r.case_type] = parseInt(r.count));
+
+    res.json({
+      success: true,
+      data: {
+        total: parseInt(totalResult.rows[0].total),
+        byStatus: statusCounts,
+        byPriority: priorityCounts,
+        byType: typeCounts
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'ERROR',
+        message: error.message
+      }
+    });
+  }
+};
+
 // Get cases (filtered by role)
 const getCases = async (req, res) => {
   try {
@@ -389,6 +538,72 @@ const scheduleInspection = async (req, res) => {
   }
 };
 
+// Reschedule inspection
+const rescheduleInspection = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { scheduledDate, reason } = req.body;
+
+    if (!scheduledDate) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'New scheduled date is required'
+        }
+      });
+    }
+
+    const caseResult = await db.query('SELECT * FROM inspection_cases WHERE id = $1', [id]);
+    if (caseResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: 'Case not found'
+        }
+      });
+    }
+
+    const caseData = caseResult.rows[0];
+
+    // Only assigned inspector can reschedule
+    if (caseData.assigned_inspector_id !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        error: {
+          code: 'FORBIDDEN',
+          message: 'Only assigned inspector can reschedule'
+        }
+      });
+    }
+
+    await db.query(`
+      UPDATE inspection_cases
+      SET scheduled_date = $1,
+          inspection_notes = COALESCE(inspection_notes || E'\\n', '') || $2
+      WHERE id = $3
+    `, [scheduledDate, `Rescheduled: ${reason || 'No reason provided'}`, id]);
+
+    res.json({
+      success: true,
+      data: {
+        message: 'Inspection rescheduled',
+        previousDate: caseData.scheduled_date,
+        newDate: scheduledDate
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'ERROR',
+        message: error.message
+      }
+    });
+  }
+};
+
 // Upload evidence
 const uploadEvidence = async (req, res) => {
   try {
@@ -620,14 +835,168 @@ const submitAnonymousTip = async (req, res) => {
   }
 };
 
+// Start inspection
+const startInspection = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { notes } = req.body;
+
+    const caseResult = await db.query('SELECT * FROM inspection_cases WHERE id = $1', [id]);
+    if (caseResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Case not found' }
+      });
+    }
+
+    const caseData = caseResult.rows[0];
+
+    // Only assigned inspector can start
+    if (caseData.assigned_inspector_id !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'Only assigned inspector can start inspection' }
+      });
+    }
+
+    await db.query(`
+      UPDATE inspection_cases
+      SET status = 'IN_PROGRESS',
+          inspection_notes = COALESCE(inspection_notes || E'\\n', '') || $1
+      WHERE id = $2
+    `, [notes || 'Inspection started', id]);
+
+    res.json({
+      success: true,
+      data: {
+        message: 'Inspection started',
+        caseNumber: caseData.case_number,
+        status: 'IN_PROGRESS'
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { code: 'ERROR', message: error.message }
+    });
+  }
+};
+
+// Add notes to case
+const addNotes = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { content, isInternal } = req.body;
+
+    if (!content) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'Note content is required' }
+      });
+    }
+
+    const caseResult = await db.query('SELECT * FROM inspection_cases WHERE id = $1', [id]);
+    if (caseResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Case not found' }
+      });
+    }
+
+    const caseData = caseResult.rows[0];
+
+    // Only assigned inspector can add notes
+    if (caseData.assigned_inspector_id !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'Only assigned inspector can add notes' }
+      });
+    }
+
+    const timestamp = new Date().toISOString();
+    const noteEntry = `[${timestamp}] ${isInternal ? '[INTERNAL] ' : ''}${content}`;
+
+    await db.query(`
+      UPDATE inspection_cases
+      SET inspection_notes = COALESCE(inspection_notes, '') || E'\\n' || $1
+      WHERE id = $2
+    `, [noteEntry, id]);
+
+    res.json({
+      success: true,
+      data: {
+        message: 'Note added successfully',
+        timestamp
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { code: 'ERROR', message: error.message }
+    });
+  }
+};
+
+// Get my statistics
+const getMyStatistics = async (req, res) => {
+  try {
+    const user = req.user;
+
+    // Get status counts for this inspector
+    const statusResult = await db.query(`
+      SELECT status, COUNT(*) as count
+      FROM inspection_cases
+      WHERE assigned_inspector_id = $1
+      GROUP BY status
+    `, [user.id]);
+
+    const statusCounts = {};
+    statusResult.rows.forEach(r => statusCounts[r.status] = parseInt(r.count));
+
+    // Get total
+    const totalResult = await db.query(`
+      SELECT COUNT(*) as total FROM inspection_cases WHERE assigned_inspector_id = $1
+    `, [user.id]);
+
+    // Get completed this month
+    const monthResult = await db.query(`
+      SELECT COUNT(*) as count FROM inspection_cases
+      WHERE assigned_inspector_id = $1
+      AND status IN ('CLOSED', 'PENDING_REVIEW')
+      AND completed_at >= DATE_TRUNC('month', CURRENT_DATE)
+    `, [user.id]);
+
+    res.json({
+      success: true,
+      data: {
+        total: parseInt(totalResult.rows[0].total),
+        byStatus: statusCounts,
+        completedThisMonth: parseInt(monthResult.rows[0].count),
+        pending: (statusCounts['ASSIGNED'] || 0) + (statusCounts['IN_PROGRESS'] || 0)
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: { code: 'ERROR', message: error.message }
+    });
+  }
+};
+
 module.exports = {
+  getMyCases,
+  getCaseStats,
   getCases,
   getCaseById,
   createCase,
   assignInspector,
+  startInspection,
+  addNotes,
   scheduleInspection,
+  rescheduleInspection,
   uploadEvidence,
   submitReport,
   closeCase,
-  submitAnonymousTip
+  submitAnonymousTip,
+  getMyStatistics
 };
