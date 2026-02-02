@@ -679,24 +679,28 @@ const getMyProperties = async (req, res) => {
     const landlordId = req.user.id;
     const { status, page = 1, limit = 20 } = req.query;
 
-    let query = `
-      SELECT p.*,
-             (SELECT COUNT(*) FROM contracts c WHERE c.property_id = p.id AND c.status = 'ACTIVE') as active_contracts
-      FROM properties p
-      WHERE p.landlord_id = $1
-    `;
+    // Build base WHERE clause
+    let whereClause = 'WHERE p.landlord_id = $1';
     const params = [landlordId];
     let paramIndex = 2;
 
     if (status) {
-      query += ` AND p.status = $${paramIndex++}`;
+      whereClause += ` AND p.status = $${paramIndex++}`;
       params.push(status);
     }
 
-    // Count total
-    const countQuery = query.replace('SELECT p.*', 'SELECT COUNT(*) as total').replace(', \n             (SELECT COUNT(*) FROM contracts c WHERE c.property_id = p.id AND c.status = \'ACTIVE\') as active_contracts', '');
-    const countResult = await db.query(countQuery, params.slice(0, paramIndex - 1));
+    // Count total first
+    const countQuery = `SELECT COUNT(*) as total FROM properties p ${whereClause}`;
+    const countResult = await db.query(countQuery, params);
     const total = parseInt(countResult.rows[0]?.total || 0);
+
+    // Main query with subquery
+    let query = `
+      SELECT p.*,
+             (SELECT COUNT(*) FROM contracts c WHERE c.property_id = p.id AND c.status = 'ACTIVE') as active_contracts
+      FROM properties p
+      ${whereClause}
+    `;
 
     // Add pagination
     const offset = (parseInt(page) - 1) * parseInt(limit);

@@ -653,7 +653,18 @@ const uploadEvidence = async (req, res) => {
 const submitReport = async (req, res) => {
   try {
     const { id } = req.params;
-    const { inspectionNotes, outcome, outcomeNotes, penaltyAmount } = req.body;
+    const { inspectionNotes, outcome, outcomeNotes, penaltyAmount, findings, recommendedAction } = req.body;
+
+    // Validate required fields
+    if (!inspectionNotes && !findings) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Inspection notes or findings are required'
+        }
+      });
+    }
 
     const caseResult = await db.query('SELECT * FROM inspection_cases WHERE id = $1', [id]);
     if (caseResult.rows.length === 0) {
