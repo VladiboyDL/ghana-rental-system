@@ -319,37 +319,36 @@ router.post('/fix-data-consistency', authenticate, authorize(ROLES.SYSTEM_ADMIN)
   try {
     console.log('Starting data consistency fix...');
 
-    // Update contract dates to be current/realistic
-    // Contract 1: Active, started 6 months ago
-    await db.query(`
-      UPDATE contracts
-      SET start_date = CURRENT_DATE - INTERVAL '6 months',
-          end_date = CURRENT_DATE + INTERVAL '18 months',
-          landlord_signed_at = CURRENT_DATE - INTERVAL '6 months' - INTERVAL '10 days',
-          tenant_confirmed_at = CURRENT_DATE - INTERVAL '6 months' - INTERVAL '9 days',
-          updated_at = NOW()
-      WHERE contract_number = 'CTR-2024-0001'
+    // Update ALL active contracts to have realistic start dates in the past
+    // This ensures payments can be generated for them
+    const activeContractsResult = await db.query(`
+      SELECT id, contract_number, ROW_NUMBER() OVER (ORDER BY created_at) as row_num
+      FROM contracts
+      WHERE status = 'ACTIVE'
     `);
 
-    // Contract 2: Active, started 3 months ago
-    await db.query(`
-      UPDATE contracts
-      SET start_date = CURRENT_DATE - INTERVAL '3 months',
-          end_date = CURRENT_DATE + INTERVAL '9 months',
-          landlord_signed_at = CURRENT_DATE - INTERVAL '3 months' - INTERVAL '10 days',
-          tenant_confirmed_at = CURRENT_DATE - INTERVAL '3 months' - INTERVAL '9 days',
-          updated_at = NOW()
-      WHERE contract_number = 'CTR-2024-0002'
-    `);
+    // Assign different start dates to each contract (staggered over past months)
+    for (const contract of activeContractsResult.rows) {
+      const monthsAgo = Math.min(6, parseInt(contract.row_num)); // 1-6 months ago
+      await db.query(`
+        UPDATE contracts
+        SET start_date = CURRENT_DATE - INTERVAL '${monthsAgo} months',
+            end_date = CURRENT_DATE + INTERVAL '${12 + monthsAgo} months',
+            landlord_signed_at = CURRENT_DATE - INTERVAL '${monthsAgo} months' - INTERVAL '10 days',
+            tenant_confirmed_at = CURRENT_DATE - INTERVAL '${monthsAgo} months' - INTERVAL '9 days',
+            updated_at = NOW()
+        WHERE id = $1
+      `, [contract.id]);
+    }
 
-    // Contract 3: Pending, starts next month
+    // Keep pending contracts in the future
     await db.query(`
       UPDATE contracts
       SET start_date = CURRENT_DATE + INTERVAL '1 month',
           end_date = CURRENT_DATE + INTERVAL '13 months',
           landlord_signed_at = CURRENT_DATE - INTERVAL '5 days',
           updated_at = NOW()
-      WHERE contract_number = 'CTR-2024-0003'
+      WHERE status = 'PENDING_TENANT_CONFIRMATION'
     `);
 
     console.log('Contracts updated');
