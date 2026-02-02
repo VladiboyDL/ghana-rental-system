@@ -13,7 +13,10 @@
     "seed": "node database/seeds/seed-postgres.js",
     "fix-types": "node database/migrations/fix-property-types.js",
     "db:reset": "npm run migrate && npm run seed",
-    "test": "jest"
+    "db:indexes": "node database/migrations/add-indexes.js",
+    "seed:more": "node database/seeds/seed-more-data.js",
+    "test": "jest",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "aws-sdk": "^2.1500.0",
@@ -23,6 +26,7 @@
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "express-validator": "^7.0.1",
+    "helmet": "^7.2.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
     "pdfkit": "^0.14.0",

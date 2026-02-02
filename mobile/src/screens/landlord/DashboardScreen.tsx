@@ -198,7 +198,10 @@ export default function LandlordDashboard() {
         {/* Pending Contracts */}
         {stats.pendingContracts > 0 && (
           <View style={styles.section}>
-            <View style={styles.alertCard}>
+            <TouchableOpacity
+              style={styles.alertCard}
+              onPress={() => navigation.navigate('MainTabs', { screen: 'Contracts' })}
+            >
               <Ionicons name="time" size={24} color={colors.warning} />
               <View style={styles.alertText}>
                 <Text style={styles.alertTitle}>
@@ -209,7 +212,7 @@ export default function LandlordDashboard() {
                 </Text>
               </View>
               <Ionicons name="chevron-forward" size={20} color={colors.textLight} />
-            </View>
+            </TouchableOpacity>
           </View>
         )}
 
