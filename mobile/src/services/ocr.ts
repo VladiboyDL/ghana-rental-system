@@ -10,6 +10,14 @@ const GHANA_CARD_PATTERNS = {
   name: /^[A-Z][A-Z\s'-]+$/,
 };
 
+// Words to skip when looking for names (headers, common ID card text)
+const SKIP_WORDS = [
+  'REPUBLIC', 'GHANA', 'NATIONAL', 'IDENTIFICATION', 'AUTHORITY', 'CARD',
+  'SURNAME', 'FIRST', 'NAME', 'OTHER', 'NAMES', 'FULL', 'PERSONAL', 'ID',
+  'NUMBER', 'DATE', 'BIRTH', 'SEX', 'NATIONALITY', 'PLACE', 'ISSUANCE',
+  'EXPIRY', 'ISSUED', 'EXPIRES', 'OF', 'THE',
+];
+
 /**
  * Extract data from Ghana Card using OCR text
  * This function processes the raw text from OCR and extracts relevant fields
@@ -25,7 +33,7 @@ export function extractGhanaCardData(ocrText: string): ExtractedIdData {
   const cardNumberMatch = ocrText.match(GHANA_CARD_PATTERNS.cardNumber);
   if (cardNumberMatch) {
     result.ghanaCardNumber = cardNumberMatch[0].toUpperCase();
-    result.confidence += 25;
+    result.confidence += 0.25;
   }
 
   // Extract dates
@@ -33,54 +41,73 @@ export function extractGhanaCardData(ocrText: string): ExtractedIdData {
   if (dates.length >= 1 && dates[0]) {
     // First date is usually date of birth
     result.dateOfBirth = formatDate(dates[0]);
-    result.confidence += 15;
+    result.confidence += 0.15;
   }
   if (dates.length >= 2 && dates[1]) {
     // Second date might be issue date
     result.dateOfIssuance = formatDate(dates[1]);
-    result.confidence += 10;
+    result.confidence += 0.10;
   }
   if (dates.length >= 3 && dates[2]) {
     // Third date might be expiry
     result.expiryDate = formatDate(dates[2]);
-    result.confidence += 10;
+    result.confidence += 0.10;
   }
 
-  // Extract name - usually the first or second line with all caps
-  for (const line of lines.slice(0, 5)) {
-    if (GHANA_CARD_PATTERNS.name.test(line) && line.length > 5) {
-      const nameParts = line.split(/\s+/);
-      if (nameParts.length >= 2) {
-        result.fullName = line;
-        result.firstName = nameParts[0];
-        result.lastName = nameParts[nameParts.length - 1];
-        if (nameParts.length > 2) {
-          result.otherNames = nameParts.slice(1, -1).join(' ');
+  // Try to extract name from labeled lines first (e.g., "FULL NAME: KWAME ASANTE")
+  const fullNameMatch = ocrText.match(/FULL\s*NAME[:\s]+([A-Z][A-Z\s'-]+)/i);
+  if (fullNameMatch && fullNameMatch[1]) {
+    const name = fullNameMatch[1].trim();
+    result.fullName = name;
+    const nameParts = name.split(/\s+/);
+    result.firstName = nameParts[0];
+    result.lastName = nameParts[nameParts.length - 1];
+    if (nameParts.length > 2) {
+      result.otherNames = nameParts.slice(1, -1).join(' ');
+    }
+    result.confidence += 0.20;
+  } else {
+    // Fallback: Extract name - look for lines with all caps that aren't header words
+    for (const line of lines) {
+      if (GHANA_CARD_PATTERNS.name.test(line) && line.length > 5) {
+        // Check if this line contains mostly header/skip words
+        const words = line.split(/\s+/);
+        const isHeaderLine = words.every(word => SKIP_WORDS.includes(word.toUpperCase()));
+
+        if (!isHeaderLine && words.length >= 2) {
+          result.fullName = line;
+          result.firstName = words[0];
+          result.lastName = words[words.length - 1];
+          if (words.length > 2) {
+            result.otherNames = words.slice(1, -1).join(' ');
+          }
+          result.confidence += 0.20;
+          break;
         }
-        result.confidence += 20;
-        break;
       }
     }
   }
 
   // Look for gender
-  const genderMatch = ocrText.match(/\b(MALE|FEMALE|M|F)\b/i);
+  const genderMatch = ocrText.match(/SEX[:\s]*(MALE|FEMALE|M|F)\b/i) || ocrText.match(/\b(MALE|FEMALE)\b/i);
   if (genderMatch) {
-    const gender = genderMatch[0].toUpperCase();
+    const gender = (genderMatch[1] || genderMatch[0]).toUpperCase();
     result.gender = gender === 'M' ? 'MALE' : gender === 'F' ? 'FEMALE' : gender;
-    result.confidence += 10;
+    result.confidence += 0.10;
   }
 
   // Look for nationality
-  if (/GHANAIAN|GHANA/i.test(ocrText)) {
+  if (/NATIONALITY[:\s]*GHANAIAN/i.test(ocrText) || /GHANAIAN/i.test(ocrText)) {
     result.nationality = 'Ghanaian';
-    result.confidence += 10;
+    result.confidence += 0.10;
   }
 
   // Look for place of issuance
-  const placeMatch = ocrText.match(/ACCRA|KUMASI|TAMALE|CAPE COAST|TAKORADI|TEMA/i);
+  const placeMatch = ocrText.match(/PLACE[:\s]*(ACCRA|KUMASI|TAMALE|CAPE COAST|TAKORADI|TEMA)/i) ||
+                     ocrText.match(/\b(ACCRA|KUMASI|TAMALE|CAPE COAST|TAKORADI|TEMA)\b/i);
   if (placeMatch) {
-    result.placeOfIssuance = placeMatch[0].charAt(0) + placeMatch[0].slice(1).toLowerCase();
+    const place = placeMatch[1] || placeMatch[0];
+    result.placeOfIssuance = place.charAt(0).toUpperCase() + place.slice(1).toLowerCase();
   }
 
   return result;
@@ -160,18 +187,25 @@ function generateMockOCRText(): string {
   ];
   const randomName = mockNames[Math.floor(Math.random() * mockNames.length)];
   const randomCardNum = `GHA-${Math.floor(100000000 + Math.random() * 900000000)}-${Math.floor(Math.random() * 10)}`;
+  const randomDay = Math.floor(1 + Math.random() * 28).toString().padStart(2, '0');
+  const randomMonth = Math.floor(1 + Math.random() * 12).toString().padStart(2, '0');
+  const randomYear = Math.floor(1970 + Math.random() * 35);
+  const gender = Math.random() > 0.5 ? 'MALE' : 'FEMALE';
 
   return `REPUBLIC OF GHANA
 NATIONAL IDENTIFICATION AUTHORITY
 GHANA CARD
-${randomName}
-${randomCardNum}
-DATE OF BIRTH: 15/03/1985
-SEX: ${Math.random() > 0.5 ? 'M' : 'F'}
+SURNAME: ${randomName.split(' ').pop()}
+FIRST NAME: ${randomName.split(' ')[0]}
+OTHER NAMES: ${randomName.split(' ').slice(1, -1).join(' ') || ''}
+FULL NAME: ${randomName}
+PERSONAL ID NUMBER: ${randomCardNum}
+DATE OF BIRTH: ${randomDay}/${randomMonth}/${randomYear}
+SEX: ${gender}
 NATIONALITY: GHANAIAN
-ACCRA
-ISSUED: 01/01/2022
-EXPIRES: 31/12/2032`;
+PLACE OF ISSUANCE: ACCRA
+DATE OF ISSUANCE: 01/01/2022
+DATE OF EXPIRY: 31/12/2032`;
 }
 
 /**

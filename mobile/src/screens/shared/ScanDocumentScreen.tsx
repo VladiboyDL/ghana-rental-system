@@ -198,13 +198,13 @@ export default function ScanDocumentScreen() {
                     <View
                       style={[
                         styles.confidenceFill,
-                        { width: `${(extractedData.confidence || 0) * 100}%` },
-                        { backgroundColor: extractedData.confidence > 0.7 ? colors.success : colors.warning },
+                        { width: `${Math.min((extractedData.confidence || 0) * 100, 100)}%` },
+                        { backgroundColor: (extractedData.confidence || 0) > 0.7 ? colors.success : colors.warning },
                       ]}
                     />
                   </View>
                   <Text style={styles.confidenceValue}>
-                    {((extractedData.confidence || 0) * 100).toFixed(0)}%
+                    {Math.min((extractedData.confidence || 0) * 100, 100).toFixed(0)}%
                   </Text>
                 </View>
               </View>
