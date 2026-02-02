@@ -254,10 +254,10 @@ export default function LandlordDashboard() {
           )}
         </View>
 
-        {/* Recent Payments */}
+        {/* Income Received */}
         <View style={[styles.section, { marginBottom: spacing.xl }]}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Recent Payments</Text>
+            <Text style={styles.sectionTitle}>Income Received</Text>
             <TouchableOpacity onPress={() => navigation.navigate('MainTabs', { screen: 'Payments' })}>
               <Text style={styles.seeAll}>See All</Text>
             </TouchableOpacity>
@@ -277,21 +277,23 @@ export default function LandlordDashboard() {
                   />
                 </View>
                 <View style={styles.paymentInfo}>
-                  <Text style={styles.paymentRef}>{payment.paymentReference}</Text>
+                  <Text style={styles.paymentRef}>
+                    {payment.tenant ? `${payment.tenant.name}` : payment.paymentReference}
+                  </Text>
                   <Text style={styles.paymentDate}>
-                    {new Date(payment.periodStart).toLocaleDateString('en-GH', { month: 'short', year: 'numeric' })}
+                    {new Date(payment.periodStart).toLocaleDateString('en-GH', { month: 'short', year: 'numeric' })} • {payment.property?.neighborhood || 'Property'}
                   </Text>
                 </View>
                 <View style={styles.paymentAmount}>
-                  <Text style={styles.paymentGross}>{formatCurrency(payment.grossAmount)}</Text>
-                  <Text style={styles.paymentNet}>Net: {formatCurrency(payment.netAmount)}</Text>
+                  <Text style={styles.paymentGross}>{formatCurrency(payment.netAmount)}</Text>
+                  <Text style={styles.paymentTax}>Tax: {formatCurrency(payment.taxAmount)}</Text>
                 </View>
               </TouchableOpacity>
             ))
           ) : (
             <View style={styles.emptyState}>
               <Ionicons name="wallet-outline" size={48} color={colors.textLight} />
-              <Text style={styles.emptyStateText}>No payments yet</Text>
+              <Text style={styles.emptyStateText}>No income received yet</Text>
             </View>
           )}
         </View>
@@ -581,6 +583,10 @@ const styles = StyleSheet.create({
   paymentNet: {
     fontSize: 11,
     color: colors.textLight,
+  },
+  paymentTax: {
+    fontSize: 11,
+    color: colors.warning,
   },
   emptyState: {
     alignItems: 'center',
