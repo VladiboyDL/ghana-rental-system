@@ -177,35 +177,23 @@ export async function performOCR(imageUri: string): Promise<string> {
 
 /**
  * Generate mock OCR text for demo purposes
+ * Fixed to Ama Mensah for consistent demo experience
  */
 function generateMockOCRText(): string {
-  const mockNames = [
-    'KWAME ASANTE BOATENG',
-    'AMA MENSAH OWUSU',
-    'KOFI ADJEI MENSAH',
-    'ABENA SERWAA DARKO',
-  ];
-  const randomName = mockNames[Math.floor(Math.random() * mockNames.length)];
-  const randomCardNum = `GHA-${Math.floor(100000000 + Math.random() * 900000000)}-${Math.floor(Math.random() * 10)}`;
-  const randomDay = Math.floor(1 + Math.random() * 28).toString().padStart(2, '0');
-  const randomMonth = Math.floor(1 + Math.random() * 12).toString().padStart(2, '0');
-  const randomYear = Math.floor(1970 + Math.random() * 35);
-  const gender = Math.random() > 0.5 ? 'MALE' : 'FEMALE';
-
   return `REPUBLIC OF GHANA
 NATIONAL IDENTIFICATION AUTHORITY
 GHANA CARD
-SURNAME: ${randomName.split(' ').pop()}
-FIRST NAME: ${randomName.split(' ')[0]}
-OTHER NAMES: ${randomName.split(' ').slice(1, -1).join(' ') || ''}
-FULL NAME: ${randomName}
-PERSONAL ID NUMBER: ${randomCardNum}
-DATE OF BIRTH: ${randomDay}/${randomMonth}/${randomYear}
-SEX: ${gender}
+SURNAME: MENSAH
+FIRST NAME: AMA
+OTHER NAMES: OWUSU
+FULL NAME: AMA OWUSU MENSAH
+PERSONAL ID NUMBER: GHA-284759163-7
+DATE OF BIRTH: 15/03/1992
+SEX: FEMALE
 NATIONALITY: GHANAIAN
 PLACE OF ISSUANCE: ACCRA
-DATE OF ISSUANCE: 01/01/2022
-DATE OF EXPIRY: 31/12/2032`;
+DATE OF ISSUANCE: 01/06/2023
+DATE OF EXPIRY: 31/05/2033`;
 }
 
 /**
