@@ -13,7 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { colors, spacing } from '../../utils/theme';
+import { colors, spacing, formatCurrency } from '../../utils/theme';
 import { RootStackParamList, Payment } from '../../types';
 import api from '../../services/api';
 
@@ -108,10 +108,6 @@ export default function MakePaymentScreen() {
     } finally {
       setIsProcessing(false);
     }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return `GH₵ ${amount.toLocaleString('en-GH', { minimumFractionDigits: 2 })}`;
   };
 
   if (isLoading) {

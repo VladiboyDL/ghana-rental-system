@@ -267,6 +267,53 @@ router.get('/sms-log', authenticate, authorize(ROLES.SYSTEM_ADMIN), (req, res) =
   });
 });
 
+// Clean up test contracts - keep only one active per tenant
+router.post('/cleanup-test-contracts', authenticate, authorize(ROLES.SYSTEM_ADMIN), async (req, res) => {
+  try {
+    const { tenantId, keepContractId } = req.body;
+
+    if (!tenantId || !keepContractId) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'tenantId and keepContractId are required' }
+      });
+    }
+
+    // Get all contracts for this tenant except the one to keep
+    const contractsToTerminate = await db.query(`
+      SELECT id, contract_number FROM contracts
+      WHERE tenant_id = $1 AND id != $2
+    `, [tenantId, keepContractId]);
+
+    // Terminate (not delete) other contracts - set them to TERMINATED status
+    const result = await db.query(`
+      UPDATE contracts
+      SET status = 'TERMINATED',
+          termination_reason = 'Test data cleanup',
+          terminated_at = NOW(),
+          updated_at = NOW()
+      WHERE tenant_id = $1 AND id != $2
+      RETURNING id, contract_number
+    `, [tenantId, keepContractId]);
+
+    res.json({
+      success: true,
+      data: {
+        message: 'Test contracts cleaned up',
+        terminatedCount: result.rowCount,
+        terminatedContracts: result.rows.map(c => c.contract_number),
+        keptContractId: keepContractId
+      }
+    });
+  } catch (error) {
+    console.error('Cleanup failed:', error);
+    res.status(500).json({
+      success: false,
+      error: { code: 'ERROR', message: error.message }
+    });
+  }
+});
+
 // Fix data consistency - Admin only
 router.post('/fix-data-consistency', authenticate, authorize(ROLES.SYSTEM_ADMIN), async (req, res) => {
   try {

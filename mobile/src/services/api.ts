@@ -2,10 +2,8 @@ import axios, { AxiosInstance, AxiosError } from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { ApiResponse, User, Property, Contract, Payment, ScannedDocument, ExtractedIdData } from '../types';
 
-// API Base URL - change this for production
-const API_BASE_URL = __DEV__
-  ? 'http://localhost:5000/api'
-  : 'https://ghana-rental-api.onrender.com/api';
+// API Base URL - always use production API
+const API_BASE_URL = 'https://ghana-rental-api.onrender.com/api';
 
 class ApiService {
   private client: AxiosInstance;
@@ -78,8 +76,9 @@ class ApiService {
     },
 
     login: async (emailOrPhone: string, password: string) => {
-      const response = await this.client.post('/auth/login', { emailOrPhone, password });
-      if (response.data?.token) {
+      const response: any = await this.client.post('/auth/login', { email: emailOrPhone, password });
+      // response is already unwrapped by interceptor: { success: true, data: { token, user } }
+      if (response?.data?.token) {
         this.setToken(response.data.token);
         await SecureStore.setItemAsync('user', JSON.stringify(response.data.user));
       }
@@ -211,6 +210,10 @@ class ApiService {
 
     updateProfile: async (data: Partial<User>) => {
       return this.client.put('/users/me', data);
+    },
+
+    changePassword: async (data: { currentPassword: string; newPassword: string }) => {
+      return this.client.post('/users/change-password', data);
     },
 
     searchTenants: async (query: string) => {

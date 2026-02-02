@@ -12,7 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { colors, spacing } from '../../utils/theme';
+import { colors, spacing, formatCurrency } from '../../utils/theme';
 import { RootStackParamList, Payment } from '../../types';
 import { useAuthStore } from '../../store/authStore';
 import api from '../../services/api';
@@ -32,6 +32,10 @@ export default function PaymentsScreen() {
   const fetchPayments = async () => {
     try {
       const response = await api.payments.getAll();
+      console.log('Payments API response:', JSON.stringify(response, null, 2));
+      if (response.data && response.data.length > 0) {
+        console.log('First payment grossAmount:', response.data[0].grossAmount, 'type:', typeof response.data[0].grossAmount);
+      }
       setPayments(response.data || []);
     } catch (error) {
       console.error('Failed to fetch payments:', error);
@@ -70,10 +74,6 @@ export default function PaymentsScreen() {
       default:
         return colors.textLight;
     }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return `GH₵ ${amount.toLocaleString('en-GH', { minimumFractionDigits: 2 })}`;
   };
 
   const renderPayment = ({ item }: { item: Payment }) => {

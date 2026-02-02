@@ -26,6 +26,7 @@ interface AuthState {
   verifyOTP: (phone: string, code: string) => Promise<boolean>;
   logout: () => Promise<void>;
   updateUser: (data: Partial<User>) => void;
+  setUser: (user: User | Partial<User>) => void;
   clearError: () => void;
 
   // Role checks
@@ -88,9 +89,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   login: async (emailOrPhone: string, password: string) => {
     set({ isLoading: true, error: null });
     try {
+      console.log('Attempting login with:', emailOrPhone);
       const response = await api.auth.login(emailOrPhone, password);
+      console.log('Login response:', JSON.stringify(response));
       const data = (response as any).data || response;
+      console.log('Extracted data:', JSON.stringify(data));
       const { token, user } = data;
+      console.log('Token:', token ? 'exists' : 'missing', 'User:', user ? 'exists' : 'missing');
+
+      if (!token || !user) {
+        throw new Error('Invalid response: missing token or user');
+      }
 
       await SecureStore.setItemAsync('authToken', token);
       await SecureStore.setItemAsync('user', JSON.stringify(user));
@@ -104,8 +113,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       });
       return true;
     } catch (error: any) {
+      console.log('Login error:', error.message, error.response?.data);
       set({
-        error: error.response?.data?.error?.message || 'Login failed',
+        error: error.response?.data?.error?.message || error.message || 'Login failed',
         isLoading: false,
       });
       return false;
@@ -178,6 +188,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ user: updatedUser });
       SecureStore.setItemAsync('user', JSON.stringify(updatedUser));
     }
+  },
+
+  setUser: (userData: User | Partial<User>) => {
+    const { user } = get();
+    const updatedUser = user ? { ...user, ...userData } : userData as User;
+    set({ user: updatedUser });
+    SecureStore.setItemAsync('user', JSON.stringify(updatedUser));
   },
 
   clearError: () => set({ error: null }),

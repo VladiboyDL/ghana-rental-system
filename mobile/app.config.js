@@ -75,9 +75,5 @@ export default {
   scheme: 'ghanarent',
   extra: {
     apiUrl: getApiUrl(),
-    eas: {
-      // IMPORTANT: Replace with your actual EAS project ID after running `eas init`
-      projectId: process.env.EAS_PROJECT_ID || 'your-project-id',
-    },
   },
 };

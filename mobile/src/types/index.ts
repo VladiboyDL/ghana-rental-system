@@ -192,6 +192,12 @@ export type RootStackParamList = {
   Notifications: undefined;
   Profile: undefined;
   Settings: undefined;
+  EditProfile: undefined;
+  ChangePassword: undefined;
+  TaxCertificates: undefined;
+  HelpSupport: undefined;
+  PrivacyPolicy: undefined;
+  TermsOfService: undefined;
 };
 
 // API Response Types

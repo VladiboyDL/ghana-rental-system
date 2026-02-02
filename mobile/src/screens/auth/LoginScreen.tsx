@@ -126,7 +126,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
               <TouchableOpacity
                 style={styles.demoButton}
                 onPress={() => {
-                  setEmail('kwame@demo.gh');
+                  setEmail('landlord@demo.com');
                   setPassword('demo123');
                 }}
               >
@@ -136,7 +136,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
               <TouchableOpacity
                 style={styles.demoButton}
                 onPress={() => {
-                  setEmail('ama@demo.gh');
+                  setEmail('tenant@demo.com');
                   setPassword('demo123');
                 }}
               >

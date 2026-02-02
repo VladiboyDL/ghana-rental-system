@@ -36,6 +36,12 @@ import ScanDocumentScreen from '../screens/shared/ScanDocumentScreen';
 import SignContractScreen from '../screens/shared/SignContractScreen';
 import ProfileScreen from '../screens/shared/ProfileScreen';
 import NotificationsScreen from '../screens/shared/NotificationsScreen';
+import EditProfileScreen from '../screens/shared/EditProfileScreen';
+import ChangePasswordScreen from '../screens/shared/ChangePasswordScreen';
+import TaxCertificatesScreen from '../screens/shared/TaxCertificatesScreen';
+import HelpSupportScreen from '../screens/shared/HelpSupportScreen';
+import PrivacyPolicyScreen from '../screens/shared/PrivacyPolicyScreen';
+import TermsOfServiceScreen from '../screens/shared/TermsOfServiceScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
@@ -223,6 +229,38 @@ export default function AppNavigator() {
               name="Notifications"
               component={NotificationsScreen}
               options={{ title: 'Notifications' }}
+            />
+
+            {/* Profile Screens */}
+            <Stack.Screen
+              name="EditProfile"
+              component={EditProfileScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="ChangePassword"
+              component={ChangePasswordScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="TaxCertificates"
+              component={TaxCertificatesScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="HelpSupport"
+              component={HelpSupportScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="PrivacyPolicy"
+              component={PrivacyPolicyScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="TermsOfService"
+              component={TermsOfServiceScreen}
+              options={{ headerShown: false }}
             />
           </>
         )}

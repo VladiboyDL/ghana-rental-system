@@ -243,4 +243,21 @@ export const typography = {
   },
 };
 
+// Currency formatting utility - works reliably in Hermes/React Native
+export const formatCurrency = (amount: number | string | undefined | null): string => {
+  // Handle string amounts (from API), undefined, null, or NaN
+  let safeAmount: number;
+  if (typeof amount === 'string') {
+    safeAmount = parseFloat(amount) || 0;
+  } else if (typeof amount === 'number' && !isNaN(amount)) {
+    safeAmount = amount;
+  } else {
+    safeAmount = 0;
+  }
+  const fixed = safeAmount.toFixed(2);
+  const parts = fixed.split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return `GH₵ ${parts.join('.')}`;
+};
+
 export default theme;

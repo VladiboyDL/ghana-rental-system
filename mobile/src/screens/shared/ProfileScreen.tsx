@@ -126,33 +126,33 @@ export default function ProfileScreen() {
             <MenuItem
               icon="person"
               label="Edit Profile"
-              onPress={() => Alert.alert('Coming Soon', 'Profile editing will be available soon.')}
+              onPress={() => navigation.navigate('EditProfile')}
             />
             <MenuItem
               icon="lock-closed"
               label="Change Password"
-              onPress={() => Alert.alert('Coming Soon', 'Password change will be available soon.')}
+              onPress={() => navigation.navigate('ChangePassword')}
             />
             <MenuItem
               icon="document-text"
               label="Tax Certificates"
-              onPress={() => Alert.alert('Coming Soon', 'Tax certificates will be available soon.')}
+              onPress={() => navigation.navigate('TaxCertificates')}
               badge={user?.role === 'LANDLORD' ? '3' : undefined}
             />
             <MenuItem
               icon="help-circle"
               label="Help & Support"
-              onPress={() => Alert.alert('Support', 'Contact us at support@ghanarentaltax.gov.gh')}
+              onPress={() => navigation.navigate('HelpSupport')}
             />
             <MenuItem
               icon="shield"
               label="Privacy Policy"
-              onPress={() => {}}
+              onPress={() => navigation.navigate('PrivacyPolicy')}
             />
             <MenuItem
               icon="document"
               label="Terms of Service"
-              onPress={() => {}}
+              onPress={() => navigation.navigate('TermsOfService')}
             />
           </View>
         </View>
@@ -161,7 +161,7 @@ export default function ProfileScreen() {
         <View style={styles.section}>
           <View style={styles.appInfo}>
             <Text style={styles.appVersion}>Ghana Rental Tax App v1.0.0</Text>
-            <Text style={styles.appCopyright}>© 2024 Ghana Revenue Authority</Text>
+            <Text style={styles.appCopyright}>© 2026 All Soft Corp s.r.o.</Text>
           </View>
         </View>
 

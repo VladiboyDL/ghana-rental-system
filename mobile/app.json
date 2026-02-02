@@ -38,6 +38,7 @@
       ]
     },
     "plugins": [
+      "expo-font",
       [
         "expo-camera",
         {
@@ -52,11 +53,6 @@
       ],
       "expo-secure-store"
     ],
-    "scheme": "ghanarent",
-    "extra": {
-      "eas": {
-        "projectId": "your-project-id"
-      }
-    }
+    "scheme": "ghanarent"
   }
 }

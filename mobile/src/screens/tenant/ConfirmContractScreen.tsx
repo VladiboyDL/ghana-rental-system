@@ -13,7 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { colors, spacing } from '../../utils/theme';
+import { colors, spacing, formatCurrency } from '../../utils/theme';
 import { RootStackParamList, Contract, ExtractedIdData } from '../../types';
 import api from '../../services/api';
 
@@ -105,10 +105,6 @@ export default function ConfirmContractScreen() {
     } finally {
       setIsConfirming(false);
     }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return `GH₵ ${amount.toLocaleString('en-GH', { minimumFractionDigits: 2 })}`;
   };
 
   if (isLoading) {
