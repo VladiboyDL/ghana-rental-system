@@ -8,12 +8,15 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  Modal,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Picker } from '@react-native-picker/picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import type { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { colors, spacing } from '../../utils/theme';
 import { RootStackParamList, Property, ExtractedIdData } from '../../types';
 import api from '../../services/api';
@@ -39,13 +42,65 @@ export default function CreateContractScreen() {
   const [tenantIdData, setTenantIdData] = useState<ExtractedIdData | null>(null);
 
   // Step 3: Contract Terms
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [startDate, setStartDate] = useState<Date>(new Date());
+  const [endDate, setEndDate] = useState<Date>(new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)); // 1 year from now
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const [monthlyRent, setMonthlyRent] = useState('');
   const [securityDeposit, setSecurityDeposit] = useState('');
   const [serviceCharge, setServiceCharge] = useState('');
   const [advanceMonths, setAdvanceMonths] = useState('2');
   const [paymentFrequency, setPaymentFrequency] = useState('MONTHLY');
+  const [showAdvanceMonthsPicker, setShowAdvanceMonthsPicker] = useState(false);
+  const [showPaymentFrequencyPicker, setShowPaymentFrequencyPicker] = useState(false);
+
+  const advanceMonthsOptions = [
+    { label: '1 Month', value: '1' },
+    { label: '2 Months', value: '2' },
+    { label: '3 Months', value: '3' },
+    { label: '6 Months', value: '6' },
+    { label: '12 Months', value: '12' },
+  ];
+
+  const paymentFrequencyOptions = [
+    { label: 'Monthly', value: 'MONTHLY' },
+    { label: 'Quarterly', value: 'QUARTERLY' },
+    { label: 'Annually', value: 'ANNUAL' },
+  ];
+
+  const formatDate = (date: Date): string => {
+    return date.toISOString().split('T')[0];
+  };
+
+  const formatDisplayDate = (date: Date): string => {
+    return date.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+  };
+
+  const onStartDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowStartDatePicker(false);
+    }
+    if (selectedDate) {
+      setStartDate(selectedDate);
+      // Auto-set end date to 1 year later if not already set
+      if (selectedDate >= endDate) {
+        setEndDate(new Date(selectedDate.getTime() + 365 * 24 * 60 * 60 * 1000));
+      }
+    }
+  };
+
+  const onEndDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowEndDatePicker(false);
+    }
+    if (selectedDate) {
+      setEndDate(selectedDate);
+    }
+  };
 
   useEffect(() => {
     fetchProperties();
@@ -101,8 +156,12 @@ export default function CreateContractScreen() {
         }
         break;
       case 3:
-        if (!startDate || !endDate || !monthlyRent) {
-          Alert.alert('Error', 'Please fill in all required contract terms');
+        if (!monthlyRent) {
+          Alert.alert('Error', 'Please fill in the monthly rent');
+          return false;
+        }
+        if (endDate <= startDate) {
+          Alert.alert('Error', 'End date must be after start date');
           return false;
         }
         break;
@@ -145,8 +204,8 @@ export default function CreateContractScreen() {
         tenantEmail: tenantEmail.trim() || undefined,
         tenantExtractedData: tenantIdData ? JSON.stringify(tenantIdData) : undefined,
         contractType: 'RESIDENTIAL', // Default to residential for now
-        startDate,
-        endDate,
+        startDate: formatDate(startDate),
+        endDate: formatDate(endDate),
         monthlyRent: parseFloat(monthlyRent),
         securityDeposit: securityDeposit ? parseFloat(securityDeposit) : 0,
         serviceCharge: serviceCharge ? parseFloat(serviceCharge) : 0,
@@ -300,28 +359,103 @@ export default function CreateContractScreen() {
       <Text style={styles.stepTitle}>Contract Terms</Text>
       <Text style={styles.stepDescription}>Set the rental terms and conditions</Text>
 
+      {/* Date Pickers */}
       <View style={styles.inputRow}>
         <View style={[styles.inputContainer, { flex: 1, marginRight: spacing.sm }]}>
           <Text style={styles.label}>Start Date *</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="YYYY-MM-DD"
-            placeholderTextColor={colors.textLight}
-            value={startDate}
-            onChangeText={setStartDate}
-          />
+          <TouchableOpacity
+            style={styles.datePickerButton}
+            onPress={() => setShowStartDatePicker(true)}
+          >
+            <Ionicons name="calendar-outline" size={20} color={colors.primary} />
+            <Text style={styles.datePickerText}>{formatDisplayDate(startDate)}</Text>
+          </TouchableOpacity>
         </View>
         <View style={[styles.inputContainer, { flex: 1 }]}>
           <Text style={styles.label}>End Date *</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="YYYY-MM-DD"
-            placeholderTextColor={colors.textLight}
-            value={endDate}
-            onChangeText={setEndDate}
-          />
+          <TouchableOpacity
+            style={styles.datePickerButton}
+            onPress={() => setShowEndDatePicker(true)}
+          >
+            <Ionicons name="calendar-outline" size={20} color={colors.primary} />
+            <Text style={styles.datePickerText}>{formatDisplayDate(endDate)}</Text>
+          </TouchableOpacity>
         </View>
       </View>
+
+      {/* Start Date Picker Modal */}
+      {showStartDatePicker && (
+        Platform.OS === 'ios' ? (
+          <Modal transparent animationType="slide" visible={showStartDatePicker}>
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <View style={styles.modalHeader}>
+                  <TouchableOpacity onPress={() => setShowStartDatePicker(false)}>
+                    <Text style={styles.modalCancel}>Cancel</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.modalTitle}>Start Date</Text>
+                  <TouchableOpacity onPress={() => setShowStartDatePicker(false)}>
+                    <Text style={styles.modalDone}>Done</Text>
+                  </TouchableOpacity>
+                </View>
+                <DateTimePicker
+                  value={startDate}
+                  mode="date"
+                  display="spinner"
+                  onChange={onStartDateChange}
+                  minimumDate={new Date()}
+                  style={styles.datePicker}
+                />
+              </View>
+            </View>
+          </Modal>
+        ) : (
+          <DateTimePicker
+            value={startDate}
+            mode="date"
+            display="default"
+            onChange={onStartDateChange}
+            minimumDate={new Date()}
+          />
+        )
+      )}
+
+      {/* End Date Picker Modal */}
+      {showEndDatePicker && (
+        Platform.OS === 'ios' ? (
+          <Modal transparent animationType="slide" visible={showEndDatePicker}>
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <View style={styles.modalHeader}>
+                  <TouchableOpacity onPress={() => setShowEndDatePicker(false)}>
+                    <Text style={styles.modalCancel}>Cancel</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.modalTitle}>End Date</Text>
+                  <TouchableOpacity onPress={() => setShowEndDatePicker(false)}>
+                    <Text style={styles.modalDone}>Done</Text>
+                  </TouchableOpacity>
+                </View>
+                <DateTimePicker
+                  value={endDate}
+                  mode="date"
+                  display="spinner"
+                  onChange={onEndDateChange}
+                  minimumDate={new Date(startDate.getTime() + 24 * 60 * 60 * 1000)}
+                  style={styles.datePicker}
+                />
+              </View>
+            </View>
+          </Modal>
+        ) : (
+          <DateTimePicker
+            value={endDate}
+            mode="date"
+            display="default"
+            onChange={onEndDateChange}
+            minimumDate={new Date(startDate.getTime() + 24 * 60 * 60 * 1000)}
+          />
+        )
+      )}
 
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Monthly Rent (GH₵) *</Text>
@@ -360,38 +494,109 @@ export default function CreateContractScreen() {
         </View>
       </View>
 
+      {/* Selection Buttons instead of Pickers */}
       <View style={styles.inputRow}>
         <View style={[styles.inputContainer, { flex: 1, marginRight: spacing.sm }]}>
           <Text style={styles.label}>Advance Months</Text>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={advanceMonths}
-              onValueChange={setAdvanceMonths}
-              style={styles.picker}
-            >
-              <Picker.Item label="1 Month" value="1" />
-              <Picker.Item label="2 Months" value="2" />
-              <Picker.Item label="3 Months" value="3" />
-              <Picker.Item label="6 Months" value="6" />
-              <Picker.Item label="12 Months" value="12" />
-            </Picker>
-          </View>
+          <TouchableOpacity
+            style={styles.selectButton}
+            onPress={() => setShowAdvanceMonthsPicker(true)}
+          >
+            <Text style={styles.selectButtonText}>
+              {advanceMonthsOptions.find(o => o.value === advanceMonths)?.label || 'Select'}
+            </Text>
+            <Ionicons name="chevron-down" size={20} color={colors.textLight} />
+          </TouchableOpacity>
         </View>
         <View style={[styles.inputContainer, { flex: 1 }]}>
           <Text style={styles.label}>Payment Frequency</Text>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={paymentFrequency}
-              onValueChange={setPaymentFrequency}
-              style={styles.picker}
-            >
-              <Picker.Item label="Monthly" value="MONTHLY" />
-              <Picker.Item label="Quarterly" value="QUARTERLY" />
-              <Picker.Item label="Annually" value="ANNUAL" />
-            </Picker>
-          </View>
+          <TouchableOpacity
+            style={styles.selectButton}
+            onPress={() => setShowPaymentFrequencyPicker(true)}
+          >
+            <Text style={styles.selectButtonText}>
+              {paymentFrequencyOptions.find(o => o.value === paymentFrequency)?.label || 'Select'}
+            </Text>
+            <Ionicons name="chevron-down" size={20} color={colors.textLight} />
+          </TouchableOpacity>
         </View>
       </View>
+
+      {/* Advance Months Picker Modal */}
+      <Modal transparent animationType="slide" visible={showAdvanceMonthsPicker}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.optionsModalContent}>
+            <View style={styles.modalHeader}>
+              <View />
+              <Text style={styles.modalTitle}>Advance Months</Text>
+              <TouchableOpacity onPress={() => setShowAdvanceMonthsPicker(false)}>
+                <Text style={styles.modalDone}>Done</Text>
+              </TouchableOpacity>
+            </View>
+            {advanceMonthsOptions.map((option) => (
+              <TouchableOpacity
+                key={option.value}
+                style={[
+                  styles.optionItem,
+                  advanceMonths === option.value && styles.optionItemSelected,
+                ]}
+                onPress={() => {
+                  setAdvanceMonths(option.value);
+                  setShowAdvanceMonthsPicker(false);
+                }}
+              >
+                <Text style={[
+                  styles.optionText,
+                  advanceMonths === option.value && styles.optionTextSelected,
+                ]}>
+                  {option.label}
+                </Text>
+                {advanceMonths === option.value && (
+                  <Ionicons name="checkmark" size={20} color={colors.primary} />
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      </Modal>
+
+      {/* Payment Frequency Picker Modal */}
+      <Modal transparent animationType="slide" visible={showPaymentFrequencyPicker}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.optionsModalContent}>
+            <View style={styles.modalHeader}>
+              <View />
+              <Text style={styles.modalTitle}>Payment Frequency</Text>
+              <TouchableOpacity onPress={() => setShowPaymentFrequencyPicker(false)}>
+                <Text style={styles.modalDone}>Done</Text>
+              </TouchableOpacity>
+            </View>
+            {paymentFrequencyOptions.map((option) => (
+              <TouchableOpacity
+                key={option.value}
+                style={[
+                  styles.optionItem,
+                  paymentFrequency === option.value && styles.optionItemSelected,
+                ]}
+                onPress={() => {
+                  setPaymentFrequency(option.value);
+                  setShowPaymentFrequencyPicker(false);
+                }}
+              >
+                <Text style={[
+                  styles.optionText,
+                  paymentFrequency === option.value && styles.optionTextSelected,
+                ]}>
+                  {option.label}
+                </Text>
+                {paymentFrequency === option.value && (
+                  <Ionicons name="checkmark" size={20} color={colors.primary} />
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      </Modal>
 
       {/* Tax Info */}
       <View style={styles.taxInfo}>
@@ -459,7 +664,7 @@ export default function CreateContractScreen() {
         <View style={styles.reviewCard}>
           <View style={styles.reviewRow}>
             <Text style={styles.reviewLabel}>Duration</Text>
-            <Text style={styles.reviewRowValue}>{startDate} to {endDate}</Text>
+            <Text style={styles.reviewRowValue}>{formatDisplayDate(startDate)} to {formatDisplayDate(endDate)}</Text>
           </View>
           <View style={styles.reviewRow}>
             <Text style={styles.reviewLabel}>Monthly Rent</Text>
@@ -803,6 +1008,100 @@ const styles = StyleSheet.create({
   },
   picker: {
     height: 50,
+  },
+  datePickerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+  },
+  datePickerText: {
+    fontSize: 16,
+    color: colors.text,
+    marginLeft: spacing.sm,
+  },
+  selectButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+  },
+  selectButtonText: {
+    fontSize: 16,
+    color: colors.text,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: colors.background,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: spacing.xl,
+  },
+  optionsModalContent: {
+    backgroundColor: colors.background,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: spacing.xl,
+    maxHeight: '50%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  modalCancel: {
+    fontSize: 16,
+    color: colors.textLight,
+  },
+  modalDone: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.primary,
+  },
+  datePicker: {
+    height: 200,
+    backgroundColor: colors.background,
+  },
+  optionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  optionItemSelected: {
+    backgroundColor: `${colors.primary}10`,
+  },
+  optionText: {
+    fontSize: 16,
+    color: colors.text,
+  },
+  optionTextSelected: {
+    color: colors.primary,
+    fontWeight: '600',
   },
   taxInfo: {
     backgroundColor: `${colors.warning}10`,

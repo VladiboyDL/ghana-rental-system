@@ -103,6 +103,7 @@ export interface Payment {
   contract?: Contract;
   tenant?: { id: string; name: string; phone: string };
   landlord?: { id: string; name: string; phone: string };
+  property?: { id: string; neighborhood: string; city: string };
   grossAmount: number;
   taxAmount: number;
   netAmount: number;
