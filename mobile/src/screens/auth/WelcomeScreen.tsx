@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, StatusBar, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,7 +19,11 @@ export default function WelcomeScreen({ navigation }: WelcomeScreenProps) {
     >
       <StatusBar barStyle="light-content" />
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.content}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          bounces={true}
+        >
           {/* Logo and Title */}
           <View style={styles.header}>
             <View style={styles.logoContainer}>
@@ -74,7 +78,7 @@ export default function WelcomeScreen({ navigation }: WelcomeScreenProps) {
           <Text style={styles.footer}>
             A Ghana Revenue Authority Initiative
           </Text>
-        </View>
+        </ScrollView>
       </SafeAreaView>
     </LinearGradient>
   );
@@ -101,10 +105,11 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  content: {
-    flex: 1,
+  scrollContent: {
+    flexGrow: 1,
     paddingHorizontal: spacing.lg,
     justifyContent: 'space-between',
+    paddingBottom: spacing.xl,
   },
   header: {
     alignItems: 'center',

@@ -199,8 +199,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   clearError: () => set({ error: null }),
 
-  isLandlord: () => get().user?.role === 'LANDLORD',
-  isTenant: () => get().user?.role === 'TENANT',
+  isLandlord: () => {
+    const role = get().user?.role;
+    return role === 'LANDLORD' || role === 'LANDLORD_INDIVIDUAL' || role === 'LANDLORD_CORPORATE';
+  },
+  isTenant: () => {
+    const role = get().user?.role;
+    return role === 'TENANT' || role === 'TENANT_INDIVIDUAL' || role === 'TENANT_CORPORATE';
+  },
 }));
 
 export default useAuthStore;
