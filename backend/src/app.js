@@ -29,11 +29,13 @@ const corsOptions = {
       return callback(null, true);
     }
 
-    // Check for render.com domains
-    if (/\.render\.com$/.test(origin)) {
+    // Check for render.com and onrender.com domains
+    if (/\.onrender\.com$/.test(origin) || /\.render\.com$/.test(origin)) {
       return callback(null, true);
     }
 
+    // Log rejected origin for debugging
+    console.log('CORS rejected origin:', origin);
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
