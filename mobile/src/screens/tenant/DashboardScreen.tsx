@@ -225,7 +225,21 @@ export default function TenantDashboard() {
             <ActionCard
               icon="card"
               label="Make Payment"
-              onPress={() => navigation.navigate('MainTabs', { screen: 'Payments' })}
+              onPress={() => {
+                // If there's a pending payment, go to MakePayment screen
+                if (stats.nextPaymentDue) {
+                  navigation.navigate('MakePayment', {
+                    contractId: stats.nextPaymentDue.contractId,
+                    paymentId: stats.nextPaymentDue.id
+                  });
+                } else if (activeContract) {
+                  // If there's an active contract, go to contract details
+                  navigation.navigate('ContractDetails', { contractId: activeContract.id });
+                } else {
+                  // Otherwise go to contracts list
+                  navigation.navigate('MainTabs', { screen: 'Contracts' });
+                }
+              }}
             />
             <ActionCard
               icon="document-text"
