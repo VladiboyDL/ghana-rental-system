@@ -184,7 +184,17 @@ const verifyOTP = async (req, res) => {
           firstName: user.first_name,
           lastName: user.last_name,
           role: user.role,
-          status: user.status
+          status: user.status,
+          complianceScore: user.compliance_score,
+          isCorporate: user.is_corporate,
+          companyName: user.company_name,
+          ghanaCardNumber: user.ghana_card_number,
+          tinNumber: user.tin_number,
+          digitalAddress: user.digital_address,
+          region: user.region,
+          district: user.district,
+          city: user.city,
+          verificationStatus: user.verification_status
         }
       }
     });
@@ -299,7 +309,14 @@ const login = async (req, res) => {
           status: user.status,
           complianceScore: user.compliance_score,
           isCorporate: user.is_corporate,
-          companyName: user.company_name
+          companyName: user.company_name,
+          ghanaCardNumber: user.ghana_card_number,
+          tinNumber: user.tin_number,
+          digitalAddress: user.digital_address,
+          region: user.region,
+          district: user.district,
+          city: user.city,
+          verificationStatus: user.verification_status
         }
       }
     });
