@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Alert,
   Dimensions,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,6 +20,14 @@ import api from '../../services/api';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type PropertyDetailsRouteProp = RouteProp<RootStackParamList, 'PropertyDetails'>;
+
+// Helper to extract photo URL from either string or object format
+const getPhotoUrl = (photo: any): string | null => {
+  if (!photo) return null;
+  if (typeof photo === 'string') return photo;
+  if (typeof photo === 'object' && photo.url) return photo.url;
+  return null;
+};
 
 const { width } = Dimensions.get('window');
 
@@ -81,9 +90,13 @@ export default function PropertyDetailsScreen() {
       <ScrollView>
         {/* Property Image */}
         <View style={styles.imageContainer}>
-          <View style={styles.placeholderImage}>
-            <Ionicons name="business" size={80} color={colors.textLight} />
-          </View>
+          {property.photos && property.photos.length > 0 && getPhotoUrl(property.photos[0]) ? (
+            <Image source={{ uri: getPhotoUrl(property.photos[0])! }} style={styles.propertyImage} />
+          ) : (
+            <View style={styles.placeholderImage}>
+              <Ionicons name="business" size={80} color={colors.textLight} />
+            </View>
+          )}
           <View style={[styles.statusBadge, { backgroundColor: getStatusColor(property.status) }]}>
             <Text style={styles.statusText}>{property.status.replace('_', ' ')}</Text>
           </View>
@@ -245,6 +258,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  propertyImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
   },
   statusBadge: {
     position: 'absolute',

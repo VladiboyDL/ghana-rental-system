@@ -5,6 +5,14 @@ import toast from 'react-hot-toast';
 import { propertyAPI } from '../services/api';
 import useAuthStore from '../store/authStore';
 
+// Helper to extract photo URL from either string or object format
+const getPhotoUrl = (photo) => {
+  if (!photo) return null;
+  if (typeof photo === 'string') return photo;
+  if (typeof photo === 'object' && photo.url) return photo.url;
+  return null;
+};
+
 const Properties = () => {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -117,9 +125,9 @@ const Properties = () => {
               className="card hover:shadow-lg transition-shadow"
             >
               <div className="aspect-video bg-gray-100 rounded-lg mb-4 flex items-center justify-center">
-                {property.photos?.length > 0 ? (
+                {property.photos?.length > 0 && getPhotoUrl(property.photos[0]) ? (
                   <img
-                    src={property.photos[0]}
+                    src={getPhotoUrl(property.photos[0])}
                     alt={property.propertyCode}
                     className="w-full h-full object-cover rounded-lg"
                   />

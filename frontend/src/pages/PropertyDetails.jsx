@@ -8,6 +8,14 @@ import toast from 'react-hot-toast';
 import { propertyAPI } from '../services/api';
 import useAuthStore from '../store/authStore';
 
+// Helper to extract photo URL from either string or object format
+const getPhotoUrl = (photo) => {
+  if (!photo) return null;
+  if (typeof photo === 'string') return photo;
+  if (typeof photo === 'object' && photo.url) return photo.url;
+  return null;
+};
+
 const PropertyDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -101,9 +109,9 @@ const PropertyDetails = () => {
           {/* Property Images */}
           <div className="card">
             <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
-              {property.photos && property.photos.length > 0 ? (
+              {property.photos && property.photos.length > 0 && getPhotoUrl(property.photos[0]) ? (
                 <img
-                  src={property.photos[0]}
+                  src={getPhotoUrl(property.photos[0])}
                   alt={property.propertyCode}
                   className="w-full h-full object-cover rounded-lg"
                 />

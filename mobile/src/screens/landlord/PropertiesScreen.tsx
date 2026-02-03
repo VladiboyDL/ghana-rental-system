@@ -19,6 +19,14 @@ import api from '../../services/api';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
+// Helper to extract photo URL from either string or object format
+const getPhotoUrl = (photo: any): string | null => {
+  if (!photo) return null;
+  if (typeof photo === 'string') return photo;
+  if (typeof photo === 'object' && photo.url) return photo.url;
+  return null;
+};
+
 export default function PropertiesScreen() {
   const navigation = useNavigation<NavigationProp>();
   const [properties, setProperties] = useState<Property[]>([]);
@@ -68,8 +76,8 @@ export default function PropertiesScreen() {
     >
       {/* Property Image */}
       <View style={styles.imageContainer}>
-        {item.photos && item.photos.length > 0 ? (
-          <Image source={{ uri: item.photos[0] }} style={styles.propertyImage} />
+        {item.photos && item.photos.length > 0 && getPhotoUrl(item.photos[0]) ? (
+          <Image source={{ uri: getPhotoUrl(item.photos[0])! }} style={styles.propertyImage} />
         ) : (
           <View style={styles.placeholderImage}>
             <Ionicons name="business" size={40} color={colors.textLight} />
